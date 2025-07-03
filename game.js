@@ -42,6 +42,7 @@ var gambar = {
   bungaHit: "bungaHit (44x42).png",
   bungaBullet: "bungaBullet.png",
   bungaBulletPieces: "bungaBullet Pieces.png",
+  bgscore: "bgscore.png",
 };
 // file tombol penggerak versi mobile
 var movementBtns = document.getElementById("movementBtns");
@@ -339,23 +340,25 @@ function cekItem() {
     game.musuhID = 0;
   }
 
-  // file: game.js -> di dalam cekItem()
   if (game.triggerID == 1) {
     game.triggerID = 0;
     game.aktif = false;
     mainkanSuara(dataSuara.win);
 
-    // --- PERUBAHAN LOGIKA ---
-    // Cek apakah ada peta untuk level selanjutnya
-    var nextLevelMap = "map_" + (game.level + 1);
-    if (window[nextLevelMap] !== undefined) {
-      // Jika ADA level selanjutnya, tampilkan popup "Level Selesai"
+    // --- PERBAIKAN LOGIKA DI SINI ---
+    // Logika yang salah sebelumnya selalu memanggil showLevelCompletePopup().
+    // Logika baru ini akan memeriksa level saat ini.
+    if (game.level === 1) {
+      // Setelah menyelesaikan Level 1, tampilkan popup untuk lanjut ke Level 2.
       showLevelCompletePopup(game.score);
+    } else if (game.level === 2) {
+      // Setelah menyelesaikan Level 2, tampilkan popup untuk lanjut ke Level 3.
+      showNextLevelPopup(game.score);
     } else {
-      // Jika TIDAK ADA level selanjutnya, tampilkan popup "Permainan Selesai"
+      // Jika ini adalah level terakhir (misal: Level 3), tampilkan popup "Permainan Selesai".
       showGameCompletePopup(game.score);
     }
-    // --- AKHIR PERUBAHAN ---
+    // --- AKHIR PERBAIKAN ---
   }
 
   // Perubahan: Tambahkan logika untuk checkpoint

@@ -448,3 +448,119 @@ canvas {
 .quiz-btn:active {
   transform: translateY(1px);
 }
+
+/* file: style.css */
+
+/* --- Style untuk Simulasi Iklan Video --- */
+.simulated-ad-container {
+  background-color: #000;
+  padding: 10px;
+  border-radius: 8px;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.simulated-video-placeholder {
+  background-color: #222;
+  color: #777;
+  width: 100%;
+  height: 200px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.5rem;
+  font-family: "Press Start 2P", cursive;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+.simulated-progress-bar {
+  width: 100%;
+  background-color: #444;
+  border-radius: 5px;
+  height: 10px;
+  margin-bottom: 15px;
+}
+
+.progress {
+  width: 0%;
+  height: 100%;
+  background-color: #3498db;
+  border-radius: 5px;
+  transition: width 0.1s linear;
+}
+
+.simulated-cta-btn {
+  display: inline-block;
+  padding: 12px 25px;
+  font-size: 1.1em;
+  font-weight: bold;
+  color: white;
+  background-color: #2ecc71; /* Hijau */
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  margin-bottom: 10px;
+}
+
+.simulated-close-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1em;
+  cursor: pointer;
+  background-color: #e74c3c; /* Merah */
+  color: white;
+}
+
+.simulated-close-btn:disabled {
+  background-color: #7f8c8d; /* Abu-abu saat disable */
+  cursor: not-allowed;
+}
+
+/* --- Style untuk Opsi di Popup Koin Habis --- */
+.game-over-options {
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* Jarak antar tombol */
+  width: 100%;
+  margin-top: 20px;
+}
+
+.swal-btn {
+  padding: 12px 20px;
+  margin: 5px;
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 1em;
+  font-weight: bold;
+  color: white;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.swal-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Warna spesifik untuk setiap tombol */
+.swal-btn-watch-ad {
+  background-color: #2ecc71; /* Hijau Terang */
+}
+
+.swal-btn-quiz {
+  background-color: #9b59b6; /* Ungu */
+}
+
+.swal-btn-restart-game {
+  background-color: #f39c12; /* Oranye */
+}
+
+.swal-btn-main-menu {
+  background-color: #e74c3c; /* Merah */
+}
+
+/* ... (sisa kode CSS) ... */
