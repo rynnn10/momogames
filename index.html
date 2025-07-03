@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <title>Momo Games</title>
+
+    <link rel="icon" type="image/png" href="assets/Jump.png" />
+    <script
+      async
+      custom-element="amp-auto-ads"
+      src="https://cdn.ampproject.org/v0/amp-auto-ads-0.1.js"
+    ></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <script type="text/javascript" src="gameLib.js"></script>
+  </head>
+  <body>
+    <div id="main-menu">
+      <h1 class="game-title">Momo Games</h1>
+
+      <div class="menu-buttons">
+        <button id="btn-mulai" class="menu-btn">Mulai</button>
+        <button id="btn-pilih-karakter" class="menu-btn">Pilih Karakter</button>
+        <button id="btn-bantuan" class="menu-btn">Bantuan</button>
+        <button id="btn-info" class="menu-btn">Info</button>
+      </div>
+    </div>
+
+    <div id="game-container" class="hidden">
+      <div id="main-controls">
+        <button id="pause" class="btn">
+          <span id="pause-icon" class="material-symbols-outlined"
+            >play_arrow</span
+          >
+        </button>
+        <button id="musicBg" class="btn">
+          <span id="music-icon" class="material-symbols-outlined"
+            >volume_off</span
+          >
+        </button>
+      </div>
+
+      <div id="gameArea">
+        <div id="pauseMenu">
+          <div class="popup-content">
+            <h2>Menu</h2>
+            <button id="playpopup" class="btn popup-btn">Lanjutkan</button>
+            <button id="infoButton" class="btn popup-btn">Informasi</button>
+            <button id="bantuanButton" class="btn popup-btn">Bantuan</button>
+          </div>
+        </div>
+        <canvas id="canvas"></canvas>
+      </div>
+
+      <div id="movementBtns">
+        <button id="leftBtn" class="move-btn">
+          <span class="material-symbols-outlined">arrow_back</span>
+        </button>
+        <button id="upBtn" class="move-btn">
+          <span class="material-symbols-outlined">arrow_upward</span>
+        </button>
+        <button id="rightBtn" class="move-btn">
+          <span class="material-symbols-outlined">arrow_forward</span>
+        </button>
+      </div>
+    </div>
+
+    <footer>@Copyright By Riyan 2025</footer>
+  </body>
+  <script
+    async
+    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4141017093486303"
+    crossorigin="anonymous"
+  ></script>
+  <script>
+    // Siapkan fungsi adBreak untuk iklan reward
+    window.adsbygoogle = window.adsbygoogle || [];
+    const adBreak = (adConfig = function (o) {
+      adsbygoogle.push(o);
+    });
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="tombol.js"></script>
+  <script type="text/javascript" src="map_3.js"></script>
+  <script type="text/javascript" src="map_2.js"></script>
+  <script type="text/javascript" src="map_1.js"></script>
+  <script type="text/javascript" src="game.js"></script>
+</html>
