@@ -1,101 +1,78 @@
-/*----------------------------------------- gameLib.js ------------------------------
-	gamelib merupakan kumpulan kode yang digunakan untuk mempermudah pembuatan game menggunakan kode HTML 5
-	Programer 		: Wandah Wibawanto
-	Lisensi			: CC, SA, BY (Creative Common, Share Alike, Credit)
-	LOG :
-	2 juli	2021	: penambahan fitur mobile
-	5 Juli 2021		: menghapus fitur lain, tinggal fitur dasar saja
-	20 juli 2021	: penambahan fitur platformer buildmap
-	31 juli 2021	: penambahan fitur RPG
-//----------------------------------------------------------------------------------*/
-var dataGambar = {};
-var dataSuara = {};
-var konten;
-var canvas;
-var gameArea;
-var touchScale;
-var smoothing = false;
-var warnaBG;
-var funcDB = [];
-var isMobile = false;
-var joyStick = {
-  stat: true,
-  out: false,
-  px: 0,
-  py: 0,
-  sx: 0,
-  sy: 0,
-  id: 0,
-  rad: 100,
-  pos: "left",
-  angle: 0,
-  kanan: false,
-  atas: false,
-  kiri: false,
-  bawah: false,
-};
-var isTouch = false;
-//---mouse
-var totalOffsetX = 0;
-var totalOffsetY = 0;
-var canvasX = 0;
-var canvasY = 0;
-var currentElement;
-var newWidth;
-var newHeight;
-var arena = {};
-var game = {};
-var gravitasi = 0.5;
-var screenW = 0;
-var screenH = 0;
-
-var sizeBtn;
-//-----------------preload-------------------------------
-function loading(img, snd, func) {
-  siapkanGambar(img, function (images) {
-    dataGambar = images;
-    console.log("gfx loaded");
-    siapkanSuara(snd, function (sound) {
-      dataSuara = sound;
-      console.log("sfx loaded");
-      jalankan(func);
-    });
+var konten,
+  canvas,
+  gameArea,
+  touchScale,
+  warnaBG,
+  currentElement,
+  newWidth,
+  newHeight,
+  sizeBtn,
+  dataGambar = {},
+  dataSuara = {},
+  smoothing = !1,
+  funcDB = [],
+  isMobile = !1,
+  joyStick = {
+    stat: !0,
+    out: !1,
+    px: 0,
+    py: 0,
+    sx: 0,
+    sy: 0,
+    id: 0,
+    rad: 100,
+    pos: "left",
+    angle: 0,
+    kanan: !1,
+    atas: !1,
+    kiri: !1,
+    bawah: !1,
+  },
+  isTouch = !1,
+  totalOffsetX = 0,
+  totalOffsetY = 0,
+  canvasX = 0,
+  canvasY = 0,
+  arena = {},
+  game = {},
+  gravitasi = 0.5,
+  screenW = 0,
+  screenH = 0;
+function loading(a, e, t) {
+  siapkanGambar(a, function (a) {
+    (dataGambar = a),
+      siapkanSuara(e, function (a) {
+        (dataSuara = a), jalankan(t);
+      });
   });
 }
-//--------------------audio------------------------------
-function Sound(src) {
-  this.sound = document.createElement("audio");
-  this.sound.src = src;
-  this.sound.setAttribute("preload", "auto");
-  this.sound.setAttribute("controls", "none");
-  this.sound.style.display = "none";
-  document.body.appendChild(this.sound);
-  this.play = function () {
-    this.sound.play();
-  };
-  this.stop = function () {
-    this.sound.pause();
-  };
-  this.loop = function () {
-    this.sound.setAttribute("loop", "loop");
-    this.sound.play();
-  };
-  this.volume = function (vol) {
-    this.sound.volume = vol;
-  };
+function Sound(a) {
+  (this.sound = document.createElement("audio")),
+    (this.sound.src = a),
+    this.sound.setAttribute("preload", "auto"),
+    this.sound.setAttribute("controls", "none"),
+    (this.sound.style.display = "none"),
+    document.body.appendChild(this.sound),
+    (this.play = function () {
+      this.sound.play();
+    }),
+    (this.stop = function () {
+      this.sound.pause();
+    }),
+    (this.loop = function () {
+      this.sound.setAttribute("loop", "loop"), this.sound.play();
+    }),
+    (this.volume = function (a) {
+      this.sound.volume = a;
+    });
 }
-function siapkanSuara(sources, callback) {
-  var sound = {};
-  var loadedSound = 0;
-  var numSound = 0;
-  // get num of sources
-  for (var src in sources) {
-    numSound++;
-  }
-  if (numSound > 0) {
-    //gambar preloader
-    hapusLayar();
-    //teks("loading sound", canvas.width/2, canvas.height/2-20);
+function siapkanSuara(a, e) {
+  var t = {},
+    n = 0,
+    m = 0;
+  for (var i in a) m++;
+  if (m > 0)
+    for (var i in (hapusLayar(),
     kotakr(
       canvas.width / 2 - 150,
       canvas.height / 2 - 10,
@@ -105,55 +82,46 @@ function siapkanSuara(sources, callback) {
       2,
       "white",
       "none"
-    );
-    for (var src in sources) {
-      sound[src] = game.folder + "/" + sources[src];
-      hapusLayar();
-      teks("loading sound", canvas.width / 2, canvas.height / 2 - 20);
-      var persen = (loadedSound / numSound) * 300; //300 = panjang preloader
+    ),
+    a)) {
+      (t[i] = game.folder + "/" + a[i]),
+        hapusLayar(),
+        teks("loading sound", canvas.width / 2, canvas.height / 2 - 20);
+      var r = (n / m) * 300;
       kotakr(
         canvas.width / 2 - 150,
         canvas.height / 2 - 10,
-        persen,
+        r,
         15,
         4,
         2,
         "white",
         "white"
-      );
-      kotakr(
-        canvas.width / 2 - 150,
-        canvas.height / 2 - 10,
-        300,
-        15,
-        4,
-        2,
-        "white",
-        "none"
-      );
-      if (++loadedSound >= numSound) {
-        callback(sound);
-      }
+      ),
+        kotakr(
+          canvas.width / 2 - 150,
+          canvas.height / 2 - 10,
+          300,
+          15,
+          4,
+          2,
+          "white",
+          "none"
+        ),
+        ++n >= m && e(t);
     }
-  } else {
-    callback(sound);
-  }
+  else e(t);
 }
-
-function siapkanGambar(sources, callback) {
-  var images = {};
-  var loadedImages = 0;
-  var numImages = 0;
-  konten.webkitImageSmoothingEnabled = smoothing;
-  konten.mozImageSmoothingEnabled = smoothing;
-  konten.imageSmoothingEnabled = smoothing;
-  // get num of sources
-  for (var src in sources) {
-    numImages++;
-  }
-  //gambar preloader
-  hapusLayar();
-  //teks("loading graphic", canvas.width/2, canvas.height/2-20);
+function siapkanGambar(a, e) {
+  var t = {},
+    n = 0,
+    m = 0;
+  for (var i in ((konten.webkitImageSmoothingEnabled = smoothing),
+  (konten.mozImageSmoothingEnabled = smoothing),
+  (konten.imageSmoothingEnabled = smoothing),
+  a))
+    m++;
+  for (var i in (hapusLayar(),
   kotakr(
     canvas.width / 2 - 150,
     canvas.height / 2 - 10,
@@ -163,1285 +131,919 @@ function siapkanGambar(sources, callback) {
     2,
     "white",
     "none"
+  ),
+  a))
+    (t[i] = new Image()),
+      (t[i].onload = function () {
+        hapusLayar(),
+          teks("loading graphic", canvas.width / 2, canvas.height / 2 - 20);
+        var a = (n / m) * 300;
+        kotakr(
+          canvas.width / 2 - 150,
+          canvas.height / 2 - 10,
+          a,
+          15,
+          4,
+          2,
+          "white",
+          "white"
+        ),
+          kotakr(
+            canvas.width / 2 - 150,
+            canvas.height / 2 - 10,
+            300,
+            15,
+            4,
+            2,
+            "white",
+            "none"
+          ),
+          ++n >= m && e(t);
+      }),
+      (t[i].src = game.folder + "/" + a[i]);
+}
+function animasi(a) {
+  sprite(a),
+    null == a.frameRate && ((a.frameRate = 3), (a.frameTimer = 0)),
+    game.pause || a.frameTimer++,
+    a.frameTimer > a.frameRate &&
+      ((a.frameTimer = 0), a.frame++, a.frame > a.maxFrame && (a.frame = 1));
+}
+function setSprite(a, e = 0, t = 0) {
+  var n = {},
+    m = a.width,
+    i = a.height;
+  (n.img = a),
+    0 == e || 0 == t
+      ? ((n.lebar = a.width), (n.tinggi = a.height))
+      : ((n.lebar = e), (n.tinggi = t));
+  var r = Math.floor(m / n.lebar) * Math.floor(i / n.tinggi);
+  return (
+    (n.x = 0),
+    (n.y = 0),
+    (n.frame = 1),
+    (n.step = 1),
+    (n.skalaX = 1),
+    (n.skalaY = 1),
+    (n.rotasi = 0),
+    (n.timer = 0),
+    (n.playOnce = !1),
+    (n.mati = !1),
+    (n.maxFrame = r),
+    (n.delay = 10),
+    (n.offsetX = 2),
+    (n.offsetY = 2),
+    (n.animJalan = 0),
+    (n.animLompat = 0),
+    (n.animJatuh = 0),
+    (n.animMati = 0),
+    (n.animKena = 0),
+    (n.animTangga = 0),
+    (n.animDiam = 0),
+    n
   );
-
-  for (var src in sources) {
-    images[src] = new Image();
-    images[src].onload = function () {
-      //tampilkan preloading baris
-      hapusLayar();
-      teks("loading graphic", canvas.width / 2, canvas.height / 2 - 20);
-      var persen = (loadedImages / numImages) * 300; //300 = panjang preloader
-      kotakr(
-        canvas.width / 2 - 150,
-        canvas.height / 2 - 10,
-        persen,
-        15,
-        4,
-        2,
-        "white",
-        "white"
-      );
-      kotakr(
-        canvas.width / 2 - 150,
-        canvas.height / 2 - 10,
-        300,
-        15,
-        4,
-        2,
-        "white",
-        "none"
-      );
-      if (++loadedImages >= numImages) {
-        callback(images);
-      }
-    };
-    images[src].src = game.folder + "/" + sources[src];
-  }
 }
-//--------------------
-function animasi(data) {
-  sprite(data);
-  if (data.frameRate == undefined) {
-    data.frameRate = 3;
-    data.frameTimer = 0;
-  }
-  if (!game.pause) data.frameTimer++;
-  if (data.frameTimer > data.frameRate) {
-    data.frameTimer = 0;
-    data.frame++;
-    if (data.frame > data.maxFrame) data.frame = 1;
-  }
+function sprite(a, e = 0) {
+  var t = a.img.width,
+    n = a.img.height;
+  null == a.lebar && (a.lebar = t), null == a.tinggi && (a.tinggi = n);
+  var m,
+    i = Math.floor(t / a.lebar),
+    r = i * Math.floor(n / a.tinggi);
+  (a.maxFrame = r),
+    0 == e ? null == a.frame && (a.frame = 1) : (a.frame = e),
+    a.frame > a.maxFrame && (a.frame = a.maxFrame),
+    (m = a.frame);
+  var g = Math.floor((m - 1) / i),
+    o = m - 1 - g * i;
+  (null != a.x && null != a.y) || ((a.x = 0), (a.y = 0)),
+    (null != a.skalaX && null != a.skalaX) || (a.skalaX = 1),
+    (null != a.skalaY && null != a.skalaY) || (a.skalaY = 1),
+    null == a.rotasi && (a.rotasi = 0),
+    (null != a.mati && 0 != a.mati) ||
+      (0 == a.rotasi
+        ? 1 == a.skalaX && 1 == a.skalaY
+          ? konten.drawImage(
+              a.img,
+              o * a.lebar,
+              g * a.tinggi,
+              a.lebar,
+              a.tinggi,
+              a.x - (a.lebar * game.skalaSprite) / a.offsetX,
+              a.y - (a.tinggi * game.skalaSprite) / a.offsetY,
+              a.lebar * game.skalaSprite,
+              a.tinggi * game.skalaSprite
+            )
+          : (konten.save(),
+            konten.translate(a.x, a.y),
+            konten.scale(a.skalaX, a.skalaY),
+            konten.drawImage(
+              a.img,
+              o * a.lebar,
+              g * a.tinggi,
+              a.lebar,
+              a.tinggi,
+              (-a.lebar * game.skalaSprite) / a.offsetX,
+              (-a.tinggi * game.skalaSprite) / a.offsetY,
+              a.lebar * game.skalaSprite,
+              a.tinggi * game.skalaSprite
+            ),
+            konten.restore())
+        : (konten.save(),
+          konten.translate(a.x, a.y),
+          konten.rotate((a.rotasi * Math.PI) / 180),
+          konten.translate(-a.x, -a.y),
+          konten.drawImage(
+            a.img,
+            o * a.lebar,
+            g * a.tinggi,
+            a.lebar,
+            a.tinggi,
+            a.x - (a.lebar * game.skalaSprite) / a.offsetX,
+            a.y - (a.tinggi * game.skalaSprite) / a.offsetY,
+            a.lebar * game.skalaSprite,
+            a.tinggi * game.skalaSprite
+          ),
+          konten.restore()));
 }
-
-function setSprite(img, lebar = 0, tinggi = 0) {
-  var ob = {};
-  var imgW = img.width;
-  var imgH = img.height;
-  ob.img = img;
-  if (lebar == 0 || tinggi == 0) {
-    ob.lebar = img.width;
-    ob.tinggi = img.height;
-  } else {
-    ob.lebar = lebar;
-    ob.tinggi = tinggi;
-  }
-  var divX = Math.floor(imgW / ob.lebar);
-  var divY = Math.floor(imgH / ob.tinggi);
-  var maxFrame = divX * divY;
-  ob.x = 0;
-  ob.y = 0;
-  ob.frame = 1;
-  ob.step = 1;
-  ob.skalaX = 1;
-  ob.skalaY = 1;
-  ob.rotasi = 0;
-  ob.timer = 0;
-  ob.playOnce = false;
-  ob.mati = false;
-  ob.maxFrame = maxFrame;
-  //animasi delay
-  ob.delay = 10;
-  ob.offsetX = 2; //tepat ditengah
-  ob.offsetY = 2;
-  ob.animJalan = 0;
-  ob.animLompat = 0;
-  ob.animJatuh = 0;
-  ob.animMati = 0;
-  ob.animKena = 0;
-  ob.animTangga = 0;
-  ob.animDiam = 0;
-  return ob;
-}
-
-function sprite(data, frm = 0) {
-  var imgW = data.img.width;
-  var imgH = data.img.height;
-  if (data.lebar == undefined) data.lebar = imgW;
-  if (data.tinggi == undefined) data.tinggi = imgH;
-  var divX = Math.floor(imgW / data.lebar);
-  var divY = Math.floor(imgH / data.tinggi);
-  var maxFrame = divX * divY;
-  data.maxFrame = maxFrame;
-  var fr;
-  if (frm == 0) {
-    if (data.frame == undefined) {
-      data.frame = 1;
-    }
-  } else {
-    data.frame = frm;
-  }
-  if (data.frame > data.maxFrame) data.frame = data.maxFrame;
-  fr = data.frame;
-  var frameY = Math.floor((fr - 1) / divX);
-  var frameX = fr - 1 - frameY * divX;
-  if (data.x == undefined || data.y == undefined) {
-    data.x = 0;
-    data.y = 0;
-  }
-  if (data.skalaX == undefined || data.skalaX == null) data.skalaX = 1;
-  if (data.skalaY == undefined || data.skalaY == null) data.skalaY = 1;
-  if (data.rotasi == undefined) data.rotasi = 0;
-  if (data.mati == undefined || data.mati == false) {
-    if (data.rotasi == 0) {
-      if (data.skalaX == 1 && data.skalaY == 1) {
-        konten.drawImage(
-          data.img,
-          frameX * data.lebar,
-          frameY * data.tinggi,
-          data.lebar,
-          data.tinggi,
-          data.x - (data.lebar * game.skalaSprite) / data.offsetX,
-          data.y - (data.tinggi * game.skalaSprite) / data.offsetY,
-          data.lebar * game.skalaSprite,
-          data.tinggi * game.skalaSprite
-        );
-      } else {
-        konten.save();
-        konten.translate(data.x, data.y);
-        konten.scale(data.skalaX, data.skalaY);
-        konten.drawImage(
-          data.img,
-          frameX * data.lebar,
-          frameY * data.tinggi,
-          data.lebar,
-          data.tinggi,
-          -(data.lebar * game.skalaSprite) / data.offsetX,
-          -(data.tinggi * game.skalaSprite) / data.offsetY,
-          data.lebar * game.skalaSprite,
-          data.tinggi * game.skalaSprite
-        );
-        konten.restore();
-      }
-    } else {
-      //gambar berotasi
-      konten.save();
-      konten.translate(data.x, data.y);
-      konten.rotate((data.rotasi * Math.PI) / 180.0);
-      konten.translate(-data.x, -data.y);
-      konten.drawImage(
-        data.img,
-        frameX * data.lebar,
-        frameY * data.tinggi,
-        data.lebar,
-        data.tinggi,
-        data.x - (data.lebar * game.skalaSprite) / data.offsetX,
-        data.y - (data.tinggi * game.skalaSprite) / data.offsetY,
-        data.lebar * game.skalaSprite,
-        data.tinggi * game.skalaSprite
-      );
+function tampilkanGambar(a, e = 0, t = 0, n = "") {
+  if ("" == n) konten.drawImage(a, e - a.width / 2, t - a.height / 2);
+  else if (n.indexOf("skala=") > -1) {
+    var m = Number(n.substr(6)) / 100;
+    konten.drawImage(
+      a,
+      0,
+      0,
+      a.width,
+      a.height,
+      e - (a.width * m) / 2,
+      t - (a.height * m) / 2,
+      a.width * m,
+      a.height * m
+    );
+  } else if (n.indexOf("rotasi=") > -1) {
+    var i = Number(n.substr(7));
+    konten.save(),
+      konten.translate(e, t),
+      konten.rotate((i * Math.PI) / 180),
+      konten.translate(-e, -t),
+      konten.drawImage(a, e - a.width / 2, t - a.height / 2),
       konten.restore();
-    }
-  }
-}
-
-function tampilkanGambar(img, px = 0, py = 0, stat = "") {
-  if (stat == "") {
-    konten.drawImage(img, px - img.width / 2, py - img.height / 2);
-  } else {
-    if (stat.indexOf("skala=") > -1) {
-      var skl = Number(stat.substr(6)) / 100;
-      konten.drawImage(
-        img,
-        0,
-        0,
-        img.width,
-        img.height,
-        px - (img.width * skl) / 2,
-        py - (img.height * skl) / 2,
-        img.width * skl,
-        img.height * skl
-      );
-    } else if (stat.indexOf("rotasi=") > -1) {
-      var rot = Number(stat.substr(7));
-      konten.save();
-      konten.translate(px, py);
-      konten.rotate((rot * Math.PI) / 180.0);
-      konten.translate(-px, -py);
-      konten.drawImage(img, px - img.width / 2, py - img.height / 2);
+  } else if (n.indexOf("alpha=") > -1) {
+    var r = Number(n.substr(6));
+    konten.save(),
+      (konten.globalAlpha = r / 100),
+      konten.drawImage(a, e - a.width / 2, t - a.height / 2),
+      (konten.globalAlpha = 1),
       konten.restore();
-    } else if (stat.indexOf("alpha=") > -1) {
-      var alp = Number(stat.substr(6));
-      konten.save();
-      konten.globalAlpha = alp / 100;
-      konten.drawImage(img, px - img.width / 2, py - img.height / 2);
-      konten.globalAlpha = 1;
-      konten.restore();
-    } else {
-      konten.drawImage(img, px - img.width / 2, py - img.height / 2);
-    }
-  }
+  } else konten.drawImage(a, e - a.width / 2, t - a.height / 2);
 }
-
-function gambarFull(img) {
+function gambarFull(a) {
   konten.drawImage(
-    img,
+    a,
     0,
     0,
-    img.width,
-    img.height,
+    a.width,
+    a.height,
     0,
     0,
     canvas.width,
     canvas.height
   );
 }
-
-function loopSprite(data) {
-  data.timer++;
-  if (data.maxFrame == 1) {
-    data.frame = 1;
-  } else {
-    if (data.timer > 2) {
-      data.timer = 0;
-      data.frame++;
-      //karaktervar
-      if (data.playOnce) {
-        data.frame = data.maxFrame;
-      } else {
-        if (data.frame > data.maxFrame) {
-          data.frame = 1;
-        }
-      }
-    }
-  }
-  sprite(data);
+function loopSprite(a) {
+  a.timer++,
+    1 == a.maxFrame
+      ? (a.frame = 1)
+      : a.timer > 2 &&
+        ((a.timer = 0),
+        a.frame++,
+        a.playOnce
+          ? (a.frame = a.maxFrame)
+          : a.frame > a.maxFrame && (a.frame = 1)),
+    sprite(a);
 }
-
-function hapusLayar(wrn = warnaBG, ob = {}) {
-  warnaBG = wrn;
-  game.timer++;
-  konten.clearRect(0, 0, canvas.width, canvas.height);
-  //   konten.fillStyle = warnaBG;
-  //   konten.fillRect(0, 0, canvas.width, canvas.height);
-  if (ob.stat == "run") {
-    funcDB.push(ob.func);
-  }
-  if (ob.stat == "clear") {
-    funcDB = [];
-  }
-  if (funcDB.length > 0) jalankan(funcDB[0]);
+function hapusLayar(a = warnaBG, e = {}) {
+  (warnaBG = a),
+    game.timer++,
+    konten.clearRect(0, 0, canvas.width, canvas.height),
+    "run" == e.stat && funcDB.push(e.func),
+    "clear" == e.stat && (funcDB = []),
+    funcDB.length > 0 && jalankan(funcDB[0]);
 }
-
-//kotak rounded
-function kotakr(
-  x,
-  y,
-  width,
-  height,
-  radius = 5,
-  tbl = 1,
-  stroke = "#000",
-  fill = "#fff"
-) {
-  radius = { tl: radius, tr: radius, br: radius, bl: radius };
-  konten.beginPath();
-  konten.moveTo(x + radius.tl, y);
-  konten.lineTo(x + width - radius.tr, y);
-  konten.quadraticCurveTo(x + width, y, x + width, y + radius.tr);
-  konten.lineTo(x + width, y + height - radius.br);
-  konten.quadraticCurveTo(
-    x + width,
-    y + height,
-    x + width - radius.br,
-    y + height
-  );
-  konten.lineTo(x + radius.bl, y + height);
-  konten.quadraticCurveTo(x, y + height, x, y + height - radius.bl);
-  konten.lineTo(x, y + radius.tl);
-  konten.quadraticCurveTo(x, y, x + radius.tl, y);
-  konten.closePath();
-  if (fill != "none") {
-    konten.fillStyle = fill;
-    konten.fill();
-  }
-  if (stroke != "none") {
-    konten.lineWidth = tbl;
-    konten.strokeStyle = stroke;
-    konten.stroke();
-  }
+function kotakr(a, e, t, n, m = 5, i = 1, r = "#000", g = "#fff") {
+  (m = { tl: m, tr: m, br: m, bl: m }),
+    konten.beginPath(),
+    konten.moveTo(a + m.tl, e),
+    konten.lineTo(a + t - m.tr, e),
+    konten.quadraticCurveTo(a + t, e, a + t, e + m.tr),
+    konten.lineTo(a + t, e + n - m.br),
+    konten.quadraticCurveTo(a + t, e + n, a + t - m.br, e + n),
+    konten.lineTo(a + m.bl, e + n),
+    konten.quadraticCurveTo(a, e + n, a, e + n - m.bl),
+    konten.lineTo(a, e + m.tl),
+    konten.quadraticCurveTo(a, e, a + m.tl, e),
+    konten.closePath(),
+    "none" != g && ((konten.fillStyle = g), konten.fill()),
+    "none" != r &&
+      ((konten.lineWidth = i), (konten.strokeStyle = r), konten.stroke());
 }
-
-function setGame(res = "") {
-  canvas = document.getElementById("canvas");
-  konten = canvas.getContext("2d");
-  gameArea = document.getElementById("gameArea").getBoundingClientRect();
-  score = 0;
-  if (res == "") {
-    konten.canvas.width = window.innerWidth;
-    konten.canvas.height = window.innerHeight;
-    screenW = window.innerWidth;
-    screenH = window.innerHeight;
-  } else {
-    var sz = res.split("x");
-    screenW = parseInt(sz[0]);
-    screenH = parseInt(sz[1]);
-    konten.canvas.width = screenW;
-    konten.canvas.height = screenH;
+function setGame(a = "") {
+  if (
+    ((canvas = document.getElementById("canvas")),
+    (konten = canvas.getContext("2d")),
+    (gameArea = document.getElementById("gameArea").getBoundingClientRect()),
+    (score = 0),
+    "" == a)
+  )
+    (konten.canvas.width = window.innerWidth),
+      (konten.canvas.height = window.innerHeight),
+      (screenW = window.innerWidth),
+      (screenH = window.innerHeight);
+  else {
+    var e = a.split("x");
+    (screenW = parseInt(e[0])),
+      (screenH = parseInt(e[1])),
+      (konten.canvas.width = screenW),
+      (konten.canvas.height = screenH);
   }
-  game = {};
-  game.aktif = true;
-  game.lebar = screenW;
-  game.tinggi = screenH;
-  game.oriW = screenW;
-  game.oriH = screenH;
-  game.areaW = gameArea.width;
-  game.areaH = gameArea.height;
-  game.font = "Calibri-normal-20pt-left-hitam-normal-1.6";
-  game.smoothing = false;
-  game.pause = false;
-  game.folder = "assets";
-  game.orient = "landscape";
-  game.fullscreen = false;
-  game.isMobile = false;
-  game.lompat = false;
-  game.suaraAktif = true;
-  game.musikAktif = false;
-  game.transisi = false;
-  game.lastAktif = game.aktif;
-  game.debug = true;
-  game.mouse = { x: 0, y: 0 };
-  game.score = 0;
-  game.hiScore = 0;
-  game.fps = 30;
-  game.timer = 0;
-  game.level = 1;
-  game.skalaSprite = 1;
-  game.warnaTransisi = "#000";
-  trace("ukuran layar = " + konten.canvas.width + " x " + konten.canvas.height);
-  trace("ukuran canvas = " + canvas.width + " x " + canvas.height);
-  trace("ukuran game Area = " + gameArea.width + " x " + gameArea.height);
-  trace("ukuran display  = " + game.oriW + " x " + game.oriH);
-
-  touchScale = {
-    x: gameArea.width / konten.canvas.width,
-    y: gameArea.height / konten.canvas.height,
-  };
-  aktifkanKeyboard();
-  trace("input keyboard & mouse aktif");
-  hapusLayar("#333");
-  //mouse
-  canvas.onmousedown = mouseDown;
-  canvas.onmouseup = mouseUp;
-  canvas.onmousemove = mouseMove;
-  canvas.oncontextmenu = function (e) {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-  //updateOffset();
+  ((game = {}).aktif = !0),
+    (game.lebar = screenW),
+    (game.tinggi = screenH),
+    (game.oriW = screenW),
+    (game.oriH = screenH),
+    (game.areaW = gameArea.width),
+    (game.areaH = gameArea.height),
+    (game.font = "Calibri-normal-20pt-left-hitam-normal-1.6"),
+    (game.smoothing = !1),
+    (game.pause = !1),
+    (game.folder = "assets"),
+    (game.orient = "landscape"),
+    (game.fullscreen = !1),
+    (game.isMobile = !1),
+    (game.lompat = !1),
+    (game.suaraAktif = !0),
+    (game.musikAktif = !1),
+    (game.transisi = !1),
+    (game.lastAktif = game.aktif),
+    (game.debug = !0),
+    (game.mouse = { x: 0, y: 0 }),
+    (game.score = 0),
+    (game.hiScore = 0),
+    (game.fps = 30),
+    (game.timer = 0),
+    (game.level = 1),
+    (game.skalaSprite = 1),
+    (game.warnaTransisi = "#000"),
+    trace(
+      "ukuran layar = " + konten.canvas.width + " x " + konten.canvas.height
+    ),
+    trace("ukuran canvas = " + canvas.width + " x " + canvas.height),
+    trace("ukuran game Area = " + gameArea.width + " x " + gameArea.height),
+    trace("ukuran display  = " + game.oriW + " x " + game.oriH),
+    (touchScale = {
+      x: gameArea.width / konten.canvas.width,
+      y: gameArea.height / konten.canvas.height,
+    }),
+    aktifkanKeyboard(),
+    trace("input keyboard & mouse aktif"),
+    hapusLayar("#333"),
+    (canvas.onmousedown = mouseDown),
+    (canvas.onmouseup = mouseUp),
+    (canvas.onmousemove = mouseMove),
+    (canvas.oncontextmenu = function (a) {
+      a.preventDefault(), a.stopPropagation();
+    });
 }
-
 function updateOffset() {
-  //mouse pos
-  currentElement = canvas;
-  totalOffsetX = 0;
-  totalOffsetY = 0;
+  (currentElement = canvas), (totalOffsetX = 0), (totalOffsetY = 0);
   do {
-    totalOffsetX += currentElement.offsetLeft;
-    totalOffsetY += currentElement.offsetTop;
+    (totalOffsetX += currentElement.offsetLeft),
+      (totalOffsetY += currentElement.offsetTop);
   } while ((currentElement = currentElement.offsetParent));
 }
-
-//mouse
-function mousePos(e) {
-  updateOffset();
-  canvasX = e.pageX - totalOffsetX;
-  canvasY = e.pageY - totalOffsetY;
-
-  // Fix for variable canvas width
-  canvasX = Math.round(canvasX * (canvas.width / canvas.offsetWidth));
-  canvasY = Math.round(canvasY * (canvas.height / canvas.offsetHeight));
-
-  //return {x:canvasX, y:canvasY}
+function mousePos(a) {
+  updateOffset(),
+    (canvasX = a.pageX - totalOffsetX),
+    (canvasY = a.pageY - totalOffsetY),
+    (canvasX = Math.round(canvasX * (canvas.width / canvas.offsetWidth))),
+    (canvasY = Math.round(canvasY * (canvas.height / canvas.offsetHeight)));
 }
-function mouseDown(e) {
-  updateOffset();
-  game.mouseDitekan = true;
-  mousePos(e);
-  game.mouse = { x: canvasX, y: canvasY };
-  game.dragX = game.mouse.x;
-  game.dragY = game.mouse.y;
-  game.clickX = game.mouse.x;
-  game.clickY = game.mouse.y;
-  //trace(game.clickX+" "+game.clickY);
-  //trace(touchScale.x+" "+touchScale.y);
+function mouseDown(a) {
+  updateOffset(),
+    (game.mouseDitekan = !0),
+    mousePos(a),
+    (game.mouse = { x: canvasX, y: canvasY }),
+    (game.dragX = game.mouse.x),
+    (game.dragY = game.mouse.y),
+    (game.clickX = game.mouse.x),
+    (game.clickY = game.mouse.y);
 }
-function mouseUp(e) {
-  game.mouseDitekan = false;
-  mousePos(e);
-  game.mouse = { x: canvasX, y: canvasY };
-  game.dragX = game.mouse.x;
-  game.dragY = game.mouse.y;
-  game.clickX = game.mouse.x;
-  game.clickY = game.mouse.y;
+function mouseUp(a) {
+  (game.mouseDitekan = !1),
+    mousePos(a),
+    (game.mouse = { x: canvasX, y: canvasY }),
+    (game.dragX = game.mouse.x),
+    (game.dragY = game.mouse.y),
+    (game.clickX = game.mouse.x),
+    (game.clickY = game.mouse.y);
 }
-function mouseMove(e) {
-  mousePos(e);
-  game.dragX = game.mouse.x;
-  game.dragY = game.mouse.y;
+function mouseMove(a) {
+  mousePos(a), (game.dragX = game.mouse.x), (game.dragY = game.mouse.y);
 }
-
-//---------------------- keyboard --------------------
-var atas = false;
-var bawah = false;
-var kiri = false;
-var kanan = false;
-var spasi = false;
-var tombolP = false;
-//-----------------keyboard listener -------------------------
-function tombolditekan(event) {
-  game.keyCode = event.keyCode;
-  game.kodeTombol = event.keyCode;
-  if (!game.pause && game.aktif) {
-    if (event.keyCode == 37) {
-      kiri = true;
-      game.kiri = true;
-    }
-    if (event.keyCode == 38) {
-      atas = true;
-      game.atas = true;
-    }
-    if (event.keyCode == 39) {
-      kanan = true;
-      game.kanan = true;
-    }
-    if (event.keyCode == 40) {
-      bawah = true;
-      game.bawah = true;
-    }
-    if (event.keyCode == 32) {
-      spasi = true;
-      game.spasi = true;
-    }
-  }
-  if (event.keyCode == 80) {
-    tombolP = true;
-  }
+var atas = !1,
+  bawah = !1,
+  kiri = !1,
+  kanan = !1,
+  spasi = !1,
+  tombolP = !1;
+function tombolditekan(a) {
+  (game.keyCode = a.keyCode),
+    (game.kodeTombol = a.keyCode),
+    !game.pause &&
+      game.aktif &&
+      (37 == a.keyCode && ((kiri = !0), (game.kiri = !0)),
+      38 == a.keyCode && ((atas = !0), (game.atas = !0)),
+      39 == a.keyCode && ((kanan = !0), (game.kanan = !0)),
+      40 == a.keyCode && ((bawah = !0), (game.bawah = !0)),
+      32 == a.keyCode && ((spasi = !0), (game.spasi = !0))),
+    80 == a.keyCode && (tombolP = !0);
 }
-function tomboldilepas(event) {
-  if (event.keyCode == 37) {
-    kiri = false;
-    game.kiri = false;
-  }
-  if (event.keyCode == 38) {
-    atas = false;
-    game.atas = false;
-  }
-  if (event.keyCode == 39) {
-    kanan = false;
-    game.kanan = false;
-  }
-  if (event.keyCode == 40) {
-    bawah = false;
-    game.bawah = false;
-  }
-  if (event.keyCode == 32) {
-    spasi = false;
-    game.spasi = false;
-  }
-  if (event.keyCode == 80) {
-    tombolP = false;
-    game.pause = !game.pause;
-  }
-  game.keyCode = null;
+function tomboldilepas(a) {
+  37 == a.keyCode && ((kiri = !1), (game.kiri = !1)),
+    38 == a.keyCode && ((atas = !1), (game.atas = !1)),
+    39 == a.keyCode && ((kanan = !1), (game.kanan = !1)),
+    40 == a.keyCode && ((bawah = !1), (game.bawah = !1)),
+    32 == a.keyCode && ((spasi = !1), (game.spasi = !1)),
+    80 == a.keyCode && ((tombolP = !1), (game.pause = !game.pause)),
+    (game.keyCode = null);
 }
 function aktifkanKeyboard() {
-  addEventListener("keydown", tombolditekan);
-  addEventListener("keyup", tomboldilepas);
-  isMobile = deteksiMobile();
-  game.isMobile = isMobile;
-  if (isMobile) {
-    //set touch
-    console.log("touch active");
-    canvas.addEventListener("touchend", touchEnd, false);
-    canvas.addEventListener("touchmove", touchMove, false);
-    canvas.addEventListener("touchstart", touchStart, false);
-    window.addEventListener("orientationchange", resizeMobile, false);
-    window.addEventListener("resize", resizeMobile, false);
-  }
+  addEventListener("keydown", tombolditekan),
+    addEventListener("keyup", tomboldilepas),
+    (isMobile = deteksiMobile()),
+    (game.isMobile = isMobile),
+    isMobile &&
+      (canvas.addEventListener("touchend", touchEnd, !1),
+      canvas.addEventListener("touchmove", touchMove, !1),
+      canvas.addEventListener("touchstart", touchStart, !1),
+      window.addEventListener("orientationchange", resizeMobile, !1),
+      window.addEventListener("resize", resizeMobile, !1));
 }
-
-//------------- tombol------
-function tombol(img, px = 0, py = 0) {
-  tampilkanGambar(img, px, py);
-  var rx = px;
-  var ry = py;
-  var obx = { x: rx, y: ry, lebar: img.width, tinggi: img.height };
-  //kotakr(rx,ry, img.width,img.height, 5, 1, "#000", "none");
-  return obx;
+function tombol(a, e = 0, t = 0) {
+  return (
+    tampilkanGambar(a, e, t), { x: e, y: t, lebar: a.width, tinggi: a.height }
+  );
 }
-
-function tekan(tom) {
-  var res = false;
-  if (game.mouseDitekan) {
-    if (
-      game.mouse.x > tom.x - tom.lebar / 2 &&
-      game.mouse.x < tom.x + tom.lebar / 2 &&
-      game.mouse.y > tom.y - tom.tinggi / 2 &&
-      game.mouse.y < tom.y + tom.tinggi / 2
-    ) {
-      game.mouseDitekan = false;
-      res = true;
-    }
-  }
-  return res;
+function tekan(a) {
+  var e = !1;
+  return (
+    game.mouseDitekan &&
+      game.mouse.x > a.x - a.lebar / 2 &&
+      game.mouse.x < a.x + a.lebar / 2 &&
+      game.mouse.y > a.y - a.tinggi / 2 &&
+      game.mouse.y < a.y + a.tinggi / 2 &&
+      ((game.mouseDitekan = !1), (e = !0)),
+    e
+  );
 }
-
-function trace(str) {
-  if (game.debug) console.log(str);
+function trace(a) {
+  game.debug;
 }
-//---------------------- GAME RUNNING ----------------
-// var loopFunc = null;
-// var fpsInterval = 1000 / 30;
-// var then = Date.now();
-// var startTime = then;
-var loopFunc = null;
-var fpsInterval, now, then, elapsed, startTime;
-
-function jalankan(func) {
-  loopFunc = func;
-  fpsInterval = 1000 / 60; // Batasi game pada 60 FPS
-  then = Date.now();
-  startTime = then;
-  rafLoops();
+var fpsInterval,
+  now,
+  then,
+  elapsed,
+  startTime,
+  loopFunc = null;
+function jalankan(a) {
+  (loopFunc = a),
+    (fpsInterval = 1e3 / 60),
+    (then = Date.now()),
+    (startTime = then),
+    rafLoops();
 }
-
 function rafLoops() {
-  // Cek jika game.loop ada, batalkan frame sebelumnya
-  if (game.loop) {
-    cancelAnimationFrame(game.loop);
-  }
-
-  game.loop = requestAnimationFrame(rafLoops);
-  now = Date.now();
-  elapsed = now - then;
-
-  // jika waktu yang berlalu cukup (lebih dari interval fps), gambar frame berikutnya
-  if (elapsed > fpsInterval) {
-    then = now - (elapsed % fpsInterval);
-
-    // Panggil game loop utama Anda tanpa parameter deltaTime
-    if (typeof loopFunc === "function") {
-      loopFunc();
-    }
-  }
+  game.loop && cancelAnimationFrame(game.loop),
+    (game.loop = requestAnimationFrame(rafLoops)),
+    (now = Date.now()),
+    (elapsed = now - then) > fpsInterval &&
+      ((then = now - (elapsed % fpsInterval)),
+      "function" == typeof loopFunc && loopFunc());
 }
-
 function grid() {
-  var totalX = screenW / 100;
-  var totalY = screenH / 100;
-  garis(3, 3, screenW, 3, 3, "#ff6969");
-  garis(3, 3, 3, screenH, 3, "#4d94ff");
-  for (var i = 0; i <= totalX; i++) {
-    if (i > 0) {
-      teks(i * 100, i * 100, 20, "Calibri-bold-15pt-center-#ff6969");
-      garis(i * 100, 25, i * 100, screenH, 0.8, "#ff6969");
-    }
-    for (var j = 0; j < 10; j++) {
-      garis(i * 100 + j * 10, 3, i * 100 + j * 10, screenH, 0.3, "#ffffff");
-    }
+  var a = screenW / 100,
+    e = screenH / 100;
+  garis(3, 3, screenW, 3, 3, "#ff6969"), garis(3, 3, 3, screenH, 3, "#4d94ff");
+  for (var t = 0; t <= a; t++) {
+    t > 0 &&
+      (teks(100 * t, 100 * t, 20, "Calibri-bold-15pt-center-#ff6969"),
+      garis(100 * t, 25, 100 * t, screenH, 0.8, "#ff6969"));
+    for (var n = 0; n < 10; n++)
+      garis(100 * t + 10 * n, 3, 100 * t + 10 * n, screenH, 0.3, "#ffffff");
   }
-  for (i = 0; i <= totalY; i++) {
-    if (i > 0) {
-      teks(i * 100, 8, i * 100 + 3, "Calibri-bold-15pt-left-#4d94ff");
-      garis(40, i * 100, screenW, i * 100, 0.8, "#4d94ff");
-    }
-    for (j = 0; j < 10; j++) {
-      garis(3, i * 100 + j * 10, screenW, i * 100 + j * 10, 0.3, "#ffffff");
-    }
-  }
+  for (t = 0; t <= e; t++)
+    for (
+      t > 0 &&
+        (teks(100 * t, 8, 100 * t + 3, "Calibri-bold-15pt-left-#4d94ff"),
+        garis(40, 100 * t, screenW, 100 * t, 0.8, "#4d94ff")),
+        n = 0;
+      n < 10;
+      n++
+    )
+      garis(3, 100 * t + 10 * n, screenW, 100 * t + 10 * n, 0.3, "#ffffff");
 }
-function garis(x1, y1, x2, y2, tbl = 1, clr = "#000", st = "") {
-  if (st.length > 0) {
-    var stx = st.split("-");
-    if (stx[0] == "dash") {
-      if (stx[1] == undefined || stx[1] == null) stx[1] = 5;
-      if (stx[2] == undefined || stx[2] == null) stx[2] = 3;
-      var dashArr = [];
-      for (var i = 1; i < stx.length; i++) {
-        dashArr.push(stx[i]);
-      }
-      konten.setLineDash(dashArr);
+function garis(a, e, t, n, m = 1, i = "#000", r = "") {
+  if (r.length > 0) {
+    var g = r.split("-");
+    if ("dash" == g[0]) {
+      (null != g[1] && null != g[1]) || (g[1] = 5),
+        (null != g[2] && null != g[2]) || (g[2] = 3);
+      for (var o = [], s = 1; s < g.length; s++) o.push(g[s]);
+      konten.setLineDash(o);
     }
   }
-  konten.strokeStyle = clr;
-  konten.lineWidth = tbl;
-  konten.beginPath();
-  konten.moveTo(x1, y1);
-  konten.lineTo(x2, y2);
-  konten.stroke();
-  konten.setLineDash([]);
+  (konten.strokeStyle = i),
+    (konten.lineWidth = m),
+    konten.beginPath(),
+    konten.moveTo(a, e),
+    konten.lineTo(t, n),
+    konten.stroke(),
+    konten.setLineDash([]);
 }
-
 var kedip = 0;
-function cekAlign(txt) {
-  var res = txt;
-  if (txt == "tengah") res = "center";
-  if (txt == "kiri") res = "left";
-  if (txt == "kanan") res = "kanan";
-  return res;
+function cekAlign(a) {
+  var e = a;
+  return (
+    "tengah" == a && (e = "center"),
+    "kiri" == a && (e = "left"),
+    "kanan" == a && (e = "kanan"),
+    e
+  );
 }
-function cekWarna(txt) {
-  var res = txt;
-  var cl = txt.split("|");
-  if (cl[0] == "hitam") res = "black";
-  if (cl[0] == "putih") res = "white";
-  if (cl[0] == "biru") res = "#0066ff";
-  if (cl[0] == "hijau") res = "#39f43e";
-  if (cl[0] == "merah") res = "#ed2d2d";
-  if (cl[0] == "jingga") res = "#ffd146";
-  if (cl[0] == "kuning") res = "#ffea00";
-  if (cl[0] == "ungu") res = "#b026ff";
-  if (cl[0] == "pink") res = "#ff7e7e";
-  if (cl[0] == "tosca") res = "#0faf9a";
-  if (cl[0] == "abuabu") res = "#7a7a7a";
-  var res2 = "none";
-  if (cl.length > 1) {
-    if (cl[1] == "hitam") res2 = "black";
-    if (cl[1] == "putih") res2 = "white";
-    if (cl[1] == "biru") res2 = "#0066ff";
-    if (cl[1] == "hijau") res2 = "#39f43e";
-    if (cl[1] == "merah") res2 = "#ed2d2d";
-    if (cl[1] == "jingga") res2 = "#ffd146";
-    if (cl[1] == "kuning") res2 = "#ffea00";
-    if (cl[1] == "ungu") res2 = "#b026ff";
-    if (cl[1] == "pink") res2 = "#ff7e7e";
-    if (cl[1] == "tosca") res2 = "#0faf9a";
-    if (cl[1] == "abuabu") res2 = "#7a7a7a";
-  }
-  var ob = { c1: res, c2: res2 };
-  return ob;
+function cekWarna(a) {
+  var e = a,
+    t = a.split("|");
+  "hitam" == t[0] && (e = "black"),
+    "putih" == t[0] && (e = "white"),
+    "biru" == t[0] && (e = "#0066ff"),
+    "hijau" == t[0] && (e = "#39f43e"),
+    "merah" == t[0] && (e = "#ed2d2d"),
+    "jingga" == t[0] && (e = "#ffd146"),
+    "kuning" == t[0] && (e = "#ffea00"),
+    "ungu" == t[0] && (e = "#b026ff"),
+    "pink" == t[0] && (e = "#ff7e7e"),
+    "tosca" == t[0] && (e = "#0faf9a"),
+    "abuabu" == t[0] && (e = "#7a7a7a");
+  var n = "none";
+  return (
+    t.length > 1 &&
+      ("hitam" == t[1] && (n = "black"),
+      "putih" == t[1] && (n = "white"),
+      "biru" == t[1] && (n = "#0066ff"),
+      "hijau" == t[1] && (n = "#39f43e"),
+      "merah" == t[1] && (n = "#ed2d2d"),
+      "jingga" == t[1] && (n = "#ffd146"),
+      "kuning" == t[1] && (n = "#ffea00"),
+      "ungu" == t[1] && (n = "#b026ff"),
+      "pink" == t[1] && (n = "#ff7e7e"),
+      "tosca" == t[1] && (n = "#0faf9a"),
+      "abuabu" == t[1] && (n = "#7a7a7a")),
+    { c1: e, c2: n }
+  );
 }
-function teks(txt, px, py, stl = "") {
-  var efek = 0;
-  var st = stl;
-  if (stl == "") {
-    //Calibri-normal-30pt-left-hitam-normal-1.6
-    st = game.font;
-  }
-  st = st.split("-");
-  //konten.font = "bold 14pt Calibri";
-  //konten.fillStyle = '#000';
-  //konten.textAlign = 'center';
-  //}else{
-  //parsing dulu font nya
-  //"Calibri-bold-30pt-left-biru|hitam-kedip
-  var fnt = "";
-  if (st.length == 1) {
-    konten.font = "bold 14pt " + st[0];
-    konten.fillStyle = "#000";
-    konten.textAlign = "center";
-  }
-  if (st.length == 2) {
-    konten.font = st[1] + " 14pt " + st[0];
-    konten.fillStyle = "#000";
-    konten.textAlign = "center";
-  }
-  if (st.length == 3) {
-    konten.font = st[1] + " " + st[2] + " " + st[0];
-    konten.fillStyle = "#000";
-    konten.textAlign = "center";
-  }
-  if (st.length == 4) {
-    konten.font = st[1] + " " + st[2] + " " + st[0];
-    konten.fillStyle = "#000";
-    konten.textAlign = cekAlign(st[3]);
-  }
-  if (st.length == 5) {
-    konten.font = st[1] + " " + st[2] + " " + st[0];
-    konten.fillStyle = cekWarna(st[4]).c1;
-    konten.textAlign = cekAlign(st[3]);
-    //stroke
-    if (cekWarna(st[4]).c2 != "none") {
-      konten.strokeStyle = cekWarna(st[4]).c2;
-    }
-  }
-  if (st.length >= 6) {
-    konten.font = st[1] + " " + st[2] + " " + st[0];
-    konten.fillStyle = cekWarna(st[4]).c1;
-    konten.textAlign = cekAlign(st[3]);
-    //stroke
-    if (cekWarna(st[4]).c2 != "none") {
-      konten.strokeStyle = cekWarna(st[4]).c2;
-    }
-    //kedip
-    if (st[5] == "kedip") {
-      efek = 1;
-      kedip++;
-      if (kedip > 30) kedip = 0;
-    }
-  }
-  //}
-  if (efek == 1 && kedip < 13) {
-    if (st.length > 4 && cekWarna(st[4]).c2 != "none")
-      konten.strokeText(txt, px, py);
-    konten.fillText(txt, px, py);
-  }
-  if (efek == 0) {
-    if (st.length > 4 && cekWarna(st[4]).c2 != "none")
-      konten.strokeText(txt, px, py);
-    konten.fillText(txt, px, py);
-  }
-  return txt;
+function teks(a, e, t, n = "") {
+  var m = 0,
+    i = n;
+  "" == n && (i = game.font);
+  return (
+    1 == (i = i.split("-")).length &&
+      ((konten.font = "bold 14pt " + i[0]),
+      (konten.fillStyle = "#000"),
+      (konten.textAlign = "center")),
+    2 == i.length &&
+      ((konten.font = i[1] + " 14pt " + i[0]),
+      (konten.fillStyle = "#000"),
+      (konten.textAlign = "center")),
+    3 == i.length &&
+      ((konten.font = i[1] + " " + i[2] + " " + i[0]),
+      (konten.fillStyle = "#000"),
+      (konten.textAlign = "center")),
+    4 == i.length &&
+      ((konten.font = i[1] + " " + i[2] + " " + i[0]),
+      (konten.fillStyle = "#000"),
+      (konten.textAlign = cekAlign(i[3]))),
+    5 == i.length &&
+      ((konten.font = i[1] + " " + i[2] + " " + i[0]),
+      (konten.fillStyle = cekWarna(i[4]).c1),
+      (konten.textAlign = cekAlign(i[3])),
+      "none" != cekWarna(i[4]).c2 && (konten.strokeStyle = cekWarna(i[4]).c2)),
+    i.length >= 6 &&
+      ((konten.font = i[1] + " " + i[2] + " " + i[0]),
+      (konten.fillStyle = cekWarna(i[4]).c1),
+      (konten.textAlign = cekAlign(i[3])),
+      "none" != cekWarna(i[4]).c2 && (konten.strokeStyle = cekWarna(i[4]).c2),
+      "kedip" == i[5] && ((m = 1), ++kedip > 30 && (kedip = 0))),
+    1 == m &&
+      kedip < 13 &&
+      (i.length > 4 &&
+        "none" != cekWarna(i[4]).c2 &&
+        konten.strokeText(a, e, t),
+      konten.fillText(a, e, t)),
+    0 == m &&
+      (i.length > 4 &&
+        "none" != cekWarna(i[4]).c2 &&
+        konten.strokeText(a, e, t),
+      konten.fillText(a, e, t)),
+    a
+  );
 }
-
-function teksHTML(s, x0, y0, maxW, fnt = "") {
-  //parsing dulu font nya
-  //Calibri-normal-20pt-left-hitam-1.6
-  //"Calibri-30pt-left-col-1.6
-  if (fnt == "") fnt = game.font;
-  var jenisF = fnt.split("-");
-  var font = jenisF[0];
-  var fontsize = Number(jenisF[2].substring(0, 2));
-  var align = jenisF[3];
+function teksHTML(a, e, t, n, m = "") {
+  "" == m && (m = game.font);
+  var i = m.split("-"),
+    r = i[0],
+    g = Number(i[2].substring(0, 2)),
+    o = i[3];
   konten.textAlign = "left";
-  var col = cekWarna(jenisF[4]).c1;
-  var spasi = 1.5;
-  if (jenisF[6] != undefined || jenisF[6] != null) {
-    spasi = Number(jenisF[6]);
+  var s = cekWarna(i[4]).c1,
+    l = 1.5;
+  (null == i[6] && null == i[6]) || (l = Number(i[6])), (r = "px " + r);
+  var c,
+    k,
+    h = [],
+    f = [0],
+    u = "",
+    p = "",
+    d = !1,
+    v = !1,
+    b = !1,
+    y = !1,
+    w = 0,
+    S = 0,
+    x = ["b", "strong", "i", "em", "sup", "sub"],
+    Y = 0,
+    X = "",
+    W = "",
+    M = "",
+    T = u,
+    I = "";
+  function j() {
+    var a = "",
+      e = g;
+    d && (a += "bold "),
+      v && (a += "italic "),
+      (b || y) && ((e = 0.8 * g), b ? (S -= 0.3 * g) : (S += 0.3 * g)),
+      (konten.font = a + e + r),
+      (X = u.split(" ")),
+      (W = ""),
+      (M = ""),
+      (T = u),
+      (I = ""),
+      (Y = 0);
+    for (var t = 0; t < X.length; t++)
+      (M = W),
+        (W += X[t] + " "),
+        (c = w + konten.measureText(W).width),
+        (Y = w + konten.measureText(M).width),
+        c > n &&
+          ((I += M),
+          f.push([w, S, konten.font, M, Y]),
+          (T = u.substring(I.length)),
+          t--,
+          (w = 0),
+          (S = 0),
+          (W = ""),
+          h.push(f),
+          (f = [0]));
+    T.length > 0 &&
+      ((c = konten.measureText(T).width),
+      (Y = w + c),
+      f.push([w, S, konten.font, T, Y]),
+      (u = ""),
+      (w += c));
   }
-  //console.log("font = "+font+"  "+spasi+" "+align);
-  // 2d canvas context, string, pos.x, pos.y, left/right/center, font, font height, color
-  // Convert html code to a series of individual strings, each displayable by fillText().
-  font = "px " + font;
-  var lines = [];
-  var line = [0];
-  var part = ""; // the text element preceding a '<'
-  var cmd = "";
-  var bold = false;
-  var italic = false;
-  var sup = false;
-  var sub = false;
-  var x = 0,
-    y = 0;
-  var dx, start;
-  var legal = ["b", "strong", "i", "em", "sup", "sub"];
-  var rx = 0;
-  var words = "";
-  var temp = "";
-  var otemp = "";
-  var sisa = part;
-  var potong = "";
-
-  function add_part() {
-    var style = "";
-    var fs = fontsize;
-    if (bold) style += "bold ";
-    if (italic) style += "italic ";
-    if (sup || sub) {
-      fs = 0.8 * fontsize;
-      if (sup) y -= 0.3 * fontsize; // y increases downward in 2D canvas
-      else y += 0.3 * fontsize;
-    }
-    konten.font = style + fs + font;
-    words = part.split(" ");
-    temp = "";
-    otemp = "";
-    sisa = part;
-    potong = "";
-    rx = 0;
-    for (var i = 0; i < words.length; i++) {
-      otemp = temp;
-      temp += words[i] + " ";
-      dx = x + konten.measureText(temp).width;
-      rx = x + konten.measureText(otemp).width;
-      if (dx > maxW) {
-        potong += otemp;
-        //console.log("temp >>>" +otemp);
-        line.push([x, y, konten.font, otemp, rx]);
-        //sisa yang belum ke push
-        sisa = part.substring(potong.length);
-        //netralkan semua
-        i--;
-        x = 0;
-        y = 0;
-        temp = "";
-        //ganti baris
-        lines.push(line);
-        line = [0];
-      }
-    }
-    if (sisa.length > 0) {
-      //console.log("sisa >>" +sisa);
-      dx = konten.measureText(sisa).width;
-      rx = x + dx;
-      line.push([x, y, konten.font, sisa, rx]);
-      part = "";
-      x += dx;
-    }
-    //diubah disini*/
+  function A() {
+    "" !== u && j(), (f[0] = w), h.push(f), (f = [0]), (w = S = 0);
   }
-
-  function end_line() {
-    if (part !== "") add_part();
-    line[0] = x;
-    lines.push(line);
-    line = [0];
-    x = y = 0;
-  }
-
-  for (var i = 0; i < s.length; i++) {
-    var c = s[i];
-    if (c == "\n") {
-      end_line();
-    } else if (c != "<") {
-      part += c; // a part of the text
-    } else {
-      // encountered '<'
-      //if (part !== '') add_part()
-      start = i + 1;
-      i++;
-      cmd = s[i];
-      var end = false;
-      if (cmd == "/") {
-        cmd = "";
-        end = true;
-      }
-      var ok = true;
-      for (i = i + 1; i < s.length; i++) {
-        if (s[i] == "<") {
-          // This means that the intial '<' did not start a command
-          i = i - 1; // back up
-          part += "<" + cmd;
-          add_part();
-          ok = false; // signal that we encountered '<'
+  for (var D = 0; D < a.length; D++) {
+    var P = a[D];
+    if ("\n" == P) A();
+    else if ("<" != P) u += P;
+    else {
+      D + 1;
+      var O = !1;
+      "/" == (p = a[++D]) && ((p = ""), (O = !0));
+      var E = !0;
+      for (D += 1; D < a.length; D++) {
+        if ("<" == a[D]) {
+          (D -= 1), (u += "<" + p), j(), (E = !1);
           break;
         }
-        if (s[i] == ">") break;
-        cmd += s[i];
+        if (">" == a[D]) break;
+        p += a[D];
       }
-      if (!ok) continue;
-      if (cmd == "br" || cmd == "br/") {
-        end_line();
-      } else {
-        if (legal.indexOf(cmd) >= 0 && part !== "") add_part();
-        switch (cmd) {
+      if (!E) continue;
+      if ("br" == p || "br/" == p) A();
+      else
+        switch ((x.indexOf(p) >= 0 && "" !== u && j(), p)) {
           case "b":
           case "strong":
-            bold = !end;
+            d = !O;
             break;
           case "i":
           case "em":
-            italic = !end;
+            v = !O;
             break;
           case "sup":
-            sup = !end;
-            if (end) y = 0;
+            (b = !O), O && (S = 0);
             break;
           case "sub":
-            sub = !end;
-            if (end) y = 0;
+            (y = !O), O && (S = 0);
             break;
           default:
-            part += "<" + cmd + ">";
+            u += "<" + p + ">";
         }
-      }
     }
   }
-  //sisa text yang masih belum keparsing
-  //console.log("sisa t = "+part);
-  if (part.length > 0) {
-    words = part.split(" ");
-    temp = "";
-    otemp = "";
-    sisa = part;
-    potong = "";
-    konten.font = fontsize + font;
-    for (i = 0; i < words.length; i++) {
-      otemp = temp;
-      temp += words[i] + " ";
-      dx = x + konten.measureText(temp).width;
-      rx = x + konten.measureText(otemp).width;
-      if (dx > maxW) {
-        potong += otemp;
-        //console.log("temp >>>" +temp);
-        line.push([x, y, konten.font, otemp, rx]);
-        //sisa yang belum ke push
-        sisa = part.substring(potong.length);
-        //netralkan semua
-        x = 0;
-        y = 0;
-        i--;
-        temp = "";
-        //ganti baris
-        lines.push(line);
-        line = [0];
-      }
-    }
-    if (sisa.length > 0) {
-      //console.log("sisa >>" +sisa);
-      dx = konten.measureText(sisa).width;
-      rx = x + dx;
-      line.push([x, y, konten.font, sisa, rx]);
-      lines.push(line);
-      part = "";
-      x += dx;
-    }
-    /*line.push([x, y, fontsize+font, part])
-        //console.log(part);
-        konten.font = fontsize+font
-        line[0] = x + konten.measureText(part).width
-        lines.push(line)*/
-  }
-  var width, L;
-  var nline = 0;
-  // Each line in lines starts with the total width of the line, followed by
-  // elements of the form {x, y, font, text}, where x and y start at zero.
-  var maxwidth = -1;
-  for (L in lines) {
-    if (lines[L][0] > maxwidth) maxwidth = lines[L][0];
-    //console.log(">>"+lines[L]);
-  }
-  for (L in lines) {
-    //console.log("y before = "+y0);
-    y0 += spasi * fontsize;
-    nline++;
-    //console.log("y before = "+y0+ "   >> "+nline);
-    for (var p in lines[L]) {
-      var k = lines[L][p];
-
-      if (k[1] === undefined) {
-        width = k;
-        continue;
-      }
-      var ta = lines[L][lines[L].length - 1];
-      if (ta.length > 1) {
-        rx = ta[4];
-        //console.log("rx = "+rx);
-      }
-      konten.font = k[2];
-      konten.fillStyle = col;
-      switch (align) {
-        case "left":
-          x = x0 + k[0];
-          y = y0 + k[1];
-          break;
-        case "center":
-          x = x0 + maxW / 2 + k[0] - rx / 2;
-          y = y0 + k[1];
-          break;
-        case "right":
-          x = x0 + k[0] + maxW - rx;
-          y = y0 + k[1];
-          break;
-        default:
-          throw new Error(align + " is not a possible alignment option.");
-      }
-      //console.log(maxW+" "+k[3]);
-      konten.fillText(k[3], x, y);
-    }
-  }
-}
-function mainkanSuara(snd, vol = 100) {
-  // --- PERUBAHAN: Tambahkan pengecekan 'isSoundOn' ---
-  // Fungsi akan langsung berhenti jika isSoundOn bernilai false
-  if (!isSoundOn) return;
-  // --- AKHIR PERUBAHAN ---
-
-  // Pengecekan 'isPaused' yang sudah ada sebelumnya
-  if (!game.suaraAktif || isPaused) return;
-
-  // Kode di bawah ini hanya akan berjalan jika suara aktif dan game tidak di-pause
-  var sa = new Sound(snd);
-  sa.volume(vol / 100);
-  sa.play();
-}
-
-function musik(snd, vol = 50) {
-  if (!game.musikAktif) {
-    game.musikAktif = true;
-    game.musik = new Sound(snd);
-    game.musik.loop();
-    game.musik.volume(vol / 100);
-  }
-}
-
-function acak(num) {
-  return Math.floor(Math.random() * num);
-}
-
-function jarak(x1, y1, x2, y2) {
-  var res = 0;
-  res = Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
-  return res;
-}
-
-function sudut(x1, y1, x2, y2) {
-  var rad = -Math.atan2(x2 - x1, y2 - y1);
-  var ang = (rad * 180) / 3.14159265359 + 90;
-  return ang;
-}
-function setGameOver(kondisi, func) {
-  game.gameOver = kondisi;
-  game.func = func;
-}
-
-//bg
-var bgx = 0;
-var bgy = 0;
-function latar(img, sx = 0, sy = 0) {
-  if (!game.pause) bgx += sx;
-  if (bgx > img.width) bgx -= img.width;
-  if (bgx < 0) bgx += img.width;
-  if (!game.pause) bgy += sy;
-  if (bgy > img.height) bgy -= img.height;
-  if (bgy < 0) bgy += img.height;
-  //tile
-  var tx = Math.ceil(screenW / img.width);
-  var ty = Math.ceil(screenH / img.height);
-  for (var i = -1; i < tx; i++) {
-    for (var j = -1; j < ty; j++) {
-      konten.drawImage(
-        img,
-        0,
-        0,
-        img.width,
-        img.height,
-        i * img.width + bgx,
-        j * img.height + bgy,
-        img.width,
-        img.height
-      );
-    }
-  }
-}
-
-function tambahScore(nl) {
-  game.score += nl;
-  if (game.score > game.hiScore) game.hiScore = game.score;
-
-  // Perubahan: Memicu animasi dengan memperbesar ukuran font
-  if (game.scoreSize) game.scoreSize = game.baseScoreSize + 8;
-}
-
-//-------- add to game lib
-function acakArray(arr) {
-  for (var i = 0; i < arr.length; i++) {
-    var temp = arr[i];
-    var ac = acak(arr.length);
-    arr[i] = arr[ac];
-    arr[ac] = temp;
-  }
-  return arr;
-}
-
-//-------- mouse ------
-function cekHit(ob1, ob2) {
-  var res = false;
-  if (
-    ob1.x > ob2.x - ob2.lebar / 2 &&
-    ob1.x < ob2.x + ob2.lebar / 2 &&
-    ob1.y > ob2.y - ob2.tinggi / 2 &&
-    ob1.y < ob2.y + ob2.tinggi / 2
-  )
-    res = true;
-  return res;
-}
-
-function hitPoint(px, py, ob2) {
-  var res = false;
-  if (ob2 != undefined) {
-    if (
-      px > ob2.x - ob2.lebar / 2 &&
-      px < ob2.x + ob2.lebar / 2 &&
-      py > ob2.y - ob2.tinggi / 2 &&
-      py < ob2.y + ob2.tinggi / 2
+  if (u.length > 0) {
+    for (
+      X = u.split(" "),
+        W = "",
+        M = "",
+        T = u,
+        I = "",
+        konten.font = g + r,
+        D = 0;
+      D < X.length;
+      D++
     )
-      res = true;
+      (M = W),
+        (W += X[D] + " "),
+        (c = w + konten.measureText(W).width),
+        (Y = w + konten.measureText(M).width),
+        c > n &&
+          ((I += M),
+          f.push([w, S, konten.font, M, Y]),
+          (T = u.substring(I.length)),
+          (w = 0),
+          (S = 0),
+          D--,
+          (W = ""),
+          h.push(f),
+          (f = [0]));
+    T.length > 0 &&
+      ((c = konten.measureText(T).width),
+      (Y = w + c),
+      f.push([w, S, konten.font, T, Y]),
+      h.push(f),
+      (u = ""),
+      (w += c));
   }
-  return res;
+  var H = -1;
+  for (k in h) h[k][0] > H && (H = h[k][0]);
+  for (k in h)
+    for (var F in ((t += l * g), h[k])) {
+      var G = h[k][F];
+      if (void 0 !== G[1]) {
+        var B = h[k][h[k].length - 1];
+        switch (
+          (B.length > 1 && (Y = B[4]),
+          (konten.font = G[2]),
+          (konten.fillStyle = s),
+          o)
+        ) {
+          case "left":
+            (w = e + G[0]), (S = t + G[1]);
+            break;
+          case "center":
+            (w = e + n / 2 + G[0] - Y / 2), (S = t + G[1]);
+            break;
+          case "right":
+            (w = e + G[0] + n - Y), (S = t + G[1]);
+            break;
+          default:
+            throw new Error(o + " is not a possible alignment option.");
+        }
+        konten.fillText(G[3], w, S);
+      } else G;
+    }
 }
-
-function tabrakan(ob1, ob2) {
-  var res = false;
-  if (ob1 != undefined && ob2 != undefined) {
-    if (hitPoint(ob1.x - ob1.lebar / 2, ob1.y - ob1.tinggi / 2, ob2))
-      return true;
-    if (hitPoint(ob1.x + ob1.lebar / 2, ob1.y - ob1.tinggi / 2, ob2))
-      return true;
-    if (hitPoint(ob1.x - ob1.lebar / 2, ob1.y + ob1.tinggi / 2, ob2))
-      return true;
-    if (hitPoint(ob1.x + ob1.lebar / 2, ob1.y + ob1.tinggi / 2, ob2))
-      return true;
+function mainkanSuara(a, e = 100) {
+  if (isSoundOn && game.suaraAktif && !isPaused) {
+    var t = new Sound(a);
+    t.volume(e / 100), t.play();
   }
-  return res;
 }
-
+function musik(a, e = 50) {
+  game.musikAktif ||
+    ((game.musikAktif = !0),
+    (game.musik = new Sound(a)),
+    game.musik.loop(),
+    game.musik.volume(e / 100));
+}
+function acak(a) {
+  return Math.floor(Math.random() * a);
+}
+function jarak(a, e, t, n) {
+  return Math.sqrt((t - a) * (t - a) + (n - e) * (n - e));
+}
+function sudut(a, e, t, n) {
+  return (180 * -Math.atan2(t - a, n - e)) / 3.14159265359 + 90;
+}
+function setGameOver(a, e) {
+  (game.gameOver = a), (game.func = e);
+}
+var bgx = 0,
+  bgy = 0;
+function latar(a, e = 0, t = 0) {
+  game.pause || (bgx += e),
+    bgx > a.width && (bgx -= a.width),
+    bgx < 0 && (bgx += a.width),
+    game.pause || (bgy += t),
+    bgy > a.height && (bgy -= a.height),
+    bgy < 0 && (bgy += a.height);
+  for (
+    var n = Math.ceil(screenW / a.width),
+      m = Math.ceil(screenH / a.height),
+      i = -1;
+    i < n;
+    i++
+  )
+    for (var r = -1; r < m; r++)
+      konten.drawImage(
+        a,
+        0,
+        0,
+        a.width,
+        a.height,
+        i * a.width + bgx,
+        r * a.height + bgy,
+        a.width,
+        a.height
+      );
+}
+function tambahScore(a) {
+  (game.score += a),
+    game.score > game.hiScore && (game.hiScore = game.score),
+    game.scoreSize && (game.scoreSize = game.baseScoreSize + 8);
+}
+function acakArray(a) {
+  for (var e = 0; e < a.length; e++) {
+    var t = a[e],
+      n = acak(a.length);
+    (a[e] = a[n]), (a[n] = t);
+  }
+  return a;
+}
+function cekHit(a, e) {
+  var t = !1;
+  return (
+    a.x > e.x - e.lebar / 2 &&
+      a.x < e.x + e.lebar / 2 &&
+      a.y > e.y - e.tinggi / 2 &&
+      a.y < e.y + e.tinggi / 2 &&
+      (t = !0),
+    t
+  );
+}
+function hitPoint(a, e, t) {
+  var n = !1;
+  return (
+    null != t &&
+      a > t.x - t.lebar / 2 &&
+      a < t.x + t.lebar / 2 &&
+      e > t.y - t.tinggi / 2 &&
+      e < t.y + t.tinggi / 2 &&
+      (n = !0),
+    n
+  );
+}
+function tabrakan(a, e) {
+  if (null != a && null != e) {
+    if (hitPoint(a.x - a.lebar / 2, a.y - a.tinggi / 2, e)) return !0;
+    if (hitPoint(a.x + a.lebar / 2, a.y - a.tinggi / 2, e)) return !0;
+    if (hitPoint(a.x - a.lebar / 2, a.y + a.tinggi / 2, e)) return !0;
+    if (hitPoint(a.x + a.lebar / 2, a.y + a.tinggi / 2, e)) return !0;
+  }
+  return !1;
+}
 var movingOb = {};
-function efekMasuk(nama, img, px, py, asal) {
-  if (movingOb[nama] == undefined) {
-    movingOb[nama] = new Object();
-    if (asal == "kiri") {
-      movingOb[nama].x = -img.width * 2;
-      movingOb[nama].y = py;
-    }
-    if (asal == "kanan") {
-      movingOb[nama].x = game.lebar + img.width * 2;
-      movingOb[nama].y = py;
-    }
-    if (asal == "atas") {
-      movingOb[nama].x = game.lebar / 2;
-      movingOb[nama].y = -img.height * 2;
-    }
-    if (asal == "bawah") {
-      movingOb[nama].x = game.lebar / 2;
-      movingOb[nama].y = game.tinggi + img.height * 2;
-    }
-    movingOb[nama].img = img;
-  } else {
-    //gerakkan
-    if (jarak(movingOb[nama].x, movingOb[nama].y, px, py) < 2) {
-      movingOb[nama].x = px;
-      movingOb[nama].y = py;
-    } else {
-      movingOb[nama].x += (px - movingOb[nama].x) / 10;
-      movingOb[nama].y += (py - movingOb[nama].y) / 10;
-    }
-  }
-  sprite(movingOb[nama]);
+function efekMasuk(a, e, t, n, m) {
+  null == movingOb[a]
+    ? ((movingOb[a] = new Object()),
+      "kiri" == m && ((movingOb[a].x = 2 * -e.width), (movingOb[a].y = n)),
+      "kanan" == m &&
+        ((movingOb[a].x = game.lebar + 2 * e.width), (movingOb[a].y = n)),
+      "atas" == m &&
+        ((movingOb[a].x = game.lebar / 2), (movingOb[a].y = 2 * -e.height)),
+      "bawah" == m &&
+        ((movingOb[a].x = game.lebar / 2),
+        (movingOb[a].y = game.tinggi + 2 * e.height)),
+      (movingOb[a].img = e))
+    : jarak(movingOb[a].x, movingOb[a].y, t, n) < 2
+    ? ((movingOb[a].x = t), (movingOb[a].y = n))
+    : ((movingOb[a].x += (t - movingOb[a].x) / 10),
+      (movingOb[a].y += (n - movingOb[a].y) / 10)),
+    sprite(movingOb[a]);
 }
-
-function acakAngka(str) {
-  var res = [];
-  var res2 = [];
-  var ang = str.split("-");
-  if (ang.length == 1) res2.push(acak(parseInt(ang[0])));
-  if (ang.length > 1) {
-    var a1 = parseInt(ang[0]);
-    var a2 = parseInt(ang[1]);
-    for (var i = a1; i <= a2; i++) {
-      res.push(i);
-    }
-    //acak
-    res2 = acakArray(res);
+function acakAngka(a) {
+  var e = [],
+    t = [],
+    n = a.split("-");
+  if ((1 == n.length && t.push(acak(parseInt(n[0]))), n.length > 1)) {
+    for (var m = parseInt(n[0]), i = parseInt(n[1]), r = m; r <= i; r++)
+      e.push(r);
+    t = acakArray(e);
   }
-  return res2;
+  return t;
 }
-/* View in fullscreen */
 function openFullscreen() {
-  var scene = document.getElementById("gameArea");
-  // if (scene.requestFullscreen) {
-  //	scene.requestFullscreen();
-  //  } else if (scene.webkitRequestFullscreen) { /* Safari */
-  //	scene.webkitRequestFullscreen();
-  //  } else if (scene.msRequestFullscreen) { /* IE11 */
-  //	scene.msRequestFullscreen();
-  // }
-  // Supports most browsers and their versions.
-  var requestMethod =
-    scene.requestFullScreen ||
-    scene.webkitRequestFullScreen ||
-    scene.mozRequestFullScreen ||
-    scene.msRequestFullScreen;
-
-  if (requestMethod) {
-    // Native full screen.
-    requestMethod.call(scene);
-  } else if (typeof window.ActiveXObject !== "undefined") {
-    // Older IE.
-    var wscript = new ActiveXObject("WScript.Shell");
-    if (wscript !== null) {
-      wscript.SendKeys("{F11}");
-    }
+  var a = document.getElementById("gameArea"),
+    e =
+      a.requestFullScreen ||
+      a.webkitRequestFullScreen ||
+      a.mozRequestFullScreen ||
+      a.msRequestFullScreen;
+  if (e) e.call(a);
+  else if (void 0 !== window.ActiveXObject) {
+    var t = new ActiveXObject("WScript.Shell");
+    null !== t && t.SendKeys("{F11}");
   }
-  resize(true);
+  resize(!0);
 }
 function closeFullscreen() {
-  if (document.exitFullscreen) {
-    document.exitFullscreen();
-  } else if (document.webkitExitFullscreen) {
-    /* Safari */
-    document.webkitExitFullscreen();
-  } else if (document.msExitFullscreen) {
-    /* IE11 */
-    document.msExitFullscreen();
-  }
-  resize(false);
+  document.exitFullscreen
+    ? document.exitFullscreen()
+    : document.webkitExitFullscreen
+    ? document.webkitExitFullscreen()
+    : document.msExitFullscreen && document.msExitFullscreen(),
+    resize(!1);
 }
-function screenSize(full) {
-  if (full) {
-    newWidth = Math.max(
-      document.documentElement.clientWidth || 0,
-      window.innerWidth || 0
-    );
-    newHeight = Math.max(
-      document.documentElement.clientHeight || 0,
-      window.innerHeight || 0
-    );
-  } else {
-    newWidth = game.oriW;
-    newHeight = game.oriH;
-  }
+function screenSize(a) {
+  a
+    ? ((newWidth = Math.max(
+        document.documentElement.clientWidth || 0,
+        window.innerWidth || 0
+      )),
+      (newHeight = Math.max(
+        document.documentElement.clientHeight || 0,
+        window.innerHeight || 0
+      )))
+    : ((newWidth = game.oriW), (newHeight = game.oriH));
 }
-function resize(full = true) {
-  screenSize(full);
-  var gA = document.getElementById("gameArea");
-  if (full) {
-    gameArea.width = newWidth;
-    gameArea.height = newHeight;
-    setTimeout(function () {
-      screenSize(true);
-      gameArea.height = newHeight;
-      getOrient();
-      trace("area full = " + gameArea.width + " x " + gameArea.height);
-      canvas.style.width = "100%";
-      canvas.style.height = "100%";
-      gA.style.width = newWidth + "px";
-      gA.style.height = newHeight + "px";
-    }, 10);
-  } else {
-    setTimeout(function () {
-      gameArea.width = game.areaW;
-      screenSize(false);
-      gameArea.height = game.areaH;
-      getOrient();
-      trace("area = " + gameArea.width + " x " + gameArea.height);
-      canvas.style.width = "100%";
-      canvas.style.height = "100%";
-      gA.style.width = game.areaW + "px";
-      gA.style.height = game.areaH + "px";
-    }, 1000);
-  }
+function resize(a = !0) {
+  screenSize(a);
+  var e = document.getElementById("gameArea");
+  a
+    ? ((gameArea.width = newWidth),
+      (gameArea.height = newHeight),
+      setTimeout(function () {
+        screenSize(!0),
+          (gameArea.height = newHeight),
+          getOrient(),
+          trace("area full = " + gameArea.width + " x " + gameArea.height),
+          (canvas.style.width = "100%"),
+          (canvas.style.height = "100%"),
+          (e.style.width = newWidth + "px"),
+          (e.style.height = newHeight + "px");
+      }, 10))
+    : setTimeout(function () {
+        (gameArea.width = game.areaW),
+          screenSize(!1),
+          (gameArea.height = game.areaH),
+          getOrient(),
+          trace("area = " + gameArea.width + " x " + gameArea.height),
+          (canvas.style.width = "100%"),
+          (canvas.style.height = "100%"),
+          (e.style.width = game.areaW + "px"),
+          (e.style.height = game.areaH + "px");
+      }, 1e3);
 }
-
 function forceFullscreen() {
-  var gA = document.getElementById("gameArea");
-  if (isMobile && game.fullscreen) {
-    newWidth = Math.max(
+  document.getElementById("gameArea");
+  isMobile &&
+    game.fullscreen &&
+    ((newWidth = Math.max(
       document.documentElement.clientWidth || 0,
       window.innerWidth || 0
-    );
-    newHeight = Math.max(
+    )),
+    (newHeight = Math.max(
       document.documentElement.clientHeight || 0,
       window.innerHeight || 0
-    );
-    if (gameArea.height != newHeight) {
-      gameArea.height = newHeight;
-    }
-  }
+    )),
+    gameArea.height != newHeight && (gameArea.height = newHeight));
 }
-
 function getOrient() {
-  //orientasi
-  if (isMobile) {
-    if (window.innerWidth < window.innerHeight) {
-      game.orient = "portrait";
-    } else {
-      game.orient = "landscape";
-    }
-  }
+  isMobile &&
+    (window.innerWidth < window.innerHeight
+      ? (game.orient = "portrait")
+      : (game.orient = "landscape"));
 }
-
 function resizeMobile() {
-  if (game.fullscreen) {
-    resize(true);
-  } else {
-    resize(false);
-  }
+  game.fullscreen ? resize(!0) : resize(!1);
 }
-//--------------------touch ----------------------------
 function deteksiMobile() {
-  const toMatch = [
+  return [
     /Android/i,
     /webOS/i,
     /iPhone/i,
@@ -1449,1402 +1051,1016 @@ function deteksiMobile() {
     /iPod/i,
     /BlackBerry/i,
     /Windows Phone/i,
-  ];
-
-  return toMatch.some((toMatchItem) => {
-    return navigator.userAgent.match(toMatchItem);
-  });
+  ].some((a) => navigator.userAgent.match(a));
 }
-//--------------touch ------------------
-function touchMove(e) {
-  e.preventDefault();
-  checkTouchMove(e.targetTouches);
+function touchMove(a) {
+  a.preventDefault(), checkTouchMove(a.targetTouches);
 }
-function touchEnd(e) {
-  isTouch = false;
-  game.mouseDitekan = false;
-  e.preventDefault();
-  checkTouchEnd(e.targetTouches);
+function touchEnd(a) {
+  (isTouch = !1),
+    (game.mouseDitekan = !1),
+    a.preventDefault(),
+    checkTouchEnd(a.targetTouches);
 }
-function touchStart(e) {
-  e.preventDefault();
-  game.mouseDitekan = true;
-  isTouch = true;
-  checkTouchStart(e.targetTouches);
+function touchStart(a) {
+  a.preventDefault(),
+    (game.mouseDitekan = !0),
+    (isTouch = !0),
+    checkTouchStart(a.targetTouches);
 }
 var out = "";
-function checkTouchStart(tt) {
-  updateOffset();
-  for (index1 = tt.length - 1; index1 > -1; --index1) {
-    touch = tt[index1];
-    var tx = touch.pageX - totalOffsetX;
-    var ty = touch.pageY - totalOffsetY;
-    tx = Math.round(tx * (canvas.width / canvas.offsetWidth));
-    ty = Math.round(ty * (canvas.height / canvas.offsetHeight));
-    doTouchStart(tx, ty, index1);
-    game.mouse = { x: tx, y: ty };
-    //trace(touch.pageX+" "+totalOffsetX);
+function checkTouchStart(a) {
+  for (updateOffset(), index1 = a.length - 1; index1 > -1; --index1) {
+    touch = a[index1];
+    var e = touch.pageX - totalOffsetX,
+      t = touch.pageY - totalOffsetY;
+    doTouchStart(
+      (e = Math.round(e * (canvas.width / canvas.offsetWidth))),
+      (t = Math.round(t * (canvas.height / canvas.offsetHeight))),
+      index1
+    ),
+      (game.mouse = { x: e, y: t });
   }
 }
-function checkTouchMove(tt) {
-  updateOffset();
-  for (index1 = tt.length - 1; index1 > -1; --index1) {
-    touch = tt[index1];
-    var tx = touch.pageX - totalOffsetX;
-    var ty = touch.pageY - totalOffsetY;
-    tx = Math.round(tx * (canvas.width / canvas.offsetWidth));
-    ty = Math.round(ty * (canvas.height / canvas.offsetHeight));
-    doTouchMove(tx, ty, index1);
-    game.mouse = { x: tx, y: ty };
+function checkTouchMove(a) {
+  for (updateOffset(), index1 = a.length - 1; index1 > -1; --index1) {
+    touch = a[index1];
+    var e = touch.pageX - totalOffsetX,
+      t = touch.pageY - totalOffsetY;
+    doTouchMove(
+      (e = Math.round(e * (canvas.width / canvas.offsetWidth))),
+      (t = Math.round(t * (canvas.height / canvas.offsetHeight))),
+      index1
+    ),
+      (game.mouse = { x: e, y: t });
   }
 }
-function checkTouchEnd(tt) {
-  var id = document.getElementById("canvas");
+function checkTouchEnd(a) {
+  document.getElementById("canvas");
   doTouchEnd();
 }
-function doTouchStart(tx, ty, id) {
-  //console.log(id);
+function doTouchStart(a, e, t) {
   if (joyStick.stat && !joyStick.out) {
-    //virtual joy
-    var okpos = false;
-    if (joyStick.pos == "left" && tx < screenW / 2) okpos = true;
-    if (joyStick.pos == "right" && tx > screenW / 2) okpos = true;
-    if (okpos) {
-      joyStick.out = true;
-      joyStick.px = tx;
-      joyStick.py = ty;
-      joyStick.sx = tx;
-      joyStick.sy = ty;
-      joyStick.id = id;
-    }
+    var n = !1;
+    "left" == joyStick.pos && a < screenW / 2 && (n = !0),
+      "right" == joyStick.pos && a > screenW / 2 && (n = !0),
+      n &&
+        ((joyStick.out = !0),
+        (joyStick.px = a),
+        (joyStick.py = e),
+        (joyStick.sx = a),
+        (joyStick.sy = e),
+        (joyStick.id = t));
   }
 }
-function doTouchMove(tx, ty, id) {
-  if (joyStick.stat) {
-    //virtual joy
-    if (joyStick.out && joyStick.id == id) {
-      //var rad =  -Math.atan2((joyStick.px - tx), (joyStick.py - ty));
-      var rad = -Math.atan2(tx - joyStick.px, ty - joyStick.py);
-      var ang = (rad * 180) / 3.14159265359 + 90;
-      var jarak_titik = Math.sqrt(
-        (joyStick.px - tx) * (joyStick.px - tx) +
-          (joyStick.py - ty) * (joyStick.py - ty)
+function doTouchMove(a, e, t) {
+  if (joyStick.stat && joyStick.out && joyStick.id == t) {
+    var n =
+        (180 * -Math.atan2(a - joyStick.px, e - joyStick.py)) / 3.14159265359 +
+        90,
+      m = Math.sqrt(
+        (joyStick.px - a) * (joyStick.px - a) +
+          (joyStick.py - e) * (joyStick.py - e)
       );
-      if (jarak_titik > joyStick.rad) jarak_titik = joyStick.rad;
-      joyStick.sx = jarak_titik * Math.cos((ang * 3.14159265359) / 180);
-      joyStick.sy = jarak_titik * Math.sin((ang * 3.14159265359) / 180);
-      joyStick.angle = ang;
-      //arah
-      joyStick.atas = false;
-      joyStick.bawah = false;
-      joyStick.kiri = false;
-      joyStick.kanan = false;
-      game.atas = false;
-      game.bawah = false;
-      game.kiri = false;
-      game.kanan = false;
-      if (ang < -68 && ang > -23) {
-        joyStick.kanan = true;
-        joyStick.atas = true;
-        game.kanan = true;
-        game.atas = true;
-      } else if (ang > -23 && ang < 23) {
-        joyStick.kanan = true;
-        game.kanan = true;
-      } else if (ang > 23 && ang < 68) {
-        joyStick.kanan = true;
-        joyStick.bawah = true;
-        game.kanan = true;
-        game.bawah = true;
-      } else if (ang > 68 && ang < 113) {
-        joyStick.bawah = true;
-        game.bawah = true;
-      } else if (ang > 113 && ang < 158) {
-        joyStick.kiri = true;
-        joyStick.bawah = true;
-        game.kiri = true;
-        game.bawah = true;
-      } else if (ang > 158 && ang < 203) {
-        joyStick.kiri = true;
-        game.kiri = true;
-      } else if (ang > 203 && ang < 248) {
-        joyStick.kiri = true;
-        joyStick.atas = true;
-        game.kiri = true;
-        game.atas = true;
-      } else if (ang > 248 || ang < -68) {
-        joyStick.atas = true;
-        game.atas = true;
-      }
-    }
+    m > joyStick.rad && (m = joyStick.rad),
+      (joyStick.sx = m * Math.cos((3.14159265359 * n) / 180)),
+      (joyStick.sy = m * Math.sin((3.14159265359 * n) / 180)),
+      (joyStick.angle = n),
+      (joyStick.atas = !1),
+      (joyStick.bawah = !1),
+      (joyStick.kiri = !1),
+      (joyStick.kanan = !1),
+      (game.atas = !1),
+      (game.bawah = !1),
+      (game.kiri = !1),
+      (game.kanan = !1),
+      n < -68 && n > -23
+        ? ((joyStick.kanan = !0),
+          (joyStick.atas = !0),
+          (game.kanan = !0),
+          (game.atas = !0))
+        : n > -23 && n < 23
+        ? ((joyStick.kanan = !0), (game.kanan = !0))
+        : n > 23 && n < 68
+        ? ((joyStick.kanan = !0),
+          (joyStick.bawah = !0),
+          (game.kanan = !0),
+          (game.bawah = !0))
+        : n > 68 && n < 113
+        ? ((joyStick.bawah = !0), (game.bawah = !0))
+        : n > 113 && n < 158
+        ? ((joyStick.kiri = !0),
+          (joyStick.bawah = !0),
+          (game.kiri = !0),
+          (game.bawah = !0))
+        : n > 158 && n < 203
+        ? ((joyStick.kiri = !0), (game.kiri = !0))
+        : n > 203 && n < 248
+        ? ((joyStick.kiri = !0),
+          (joyStick.atas = !0),
+          (game.kiri = !0),
+          (game.atas = !0))
+        : (n > 248 || n < -68) && ((joyStick.atas = !0), (game.atas = !0));
   }
 }
 function doTouchEnd() {
-  if (joyStick.stat) {
-    //virtual joy
-    if (joyStick.out) {
-      game.atas = false;
-      game.bawah = false;
-      game.kiri = false;
-      game.kanan = false;
-      joyStick.out = false;
-      joyStick.atas = false;
-      joyStick.bawah = false;
-      joyStick.kiri = false;
-      joyStick.kanan = false;
-    }
-  }
+  joyStick.stat &&
+    joyStick.out &&
+    ((game.atas = !1),
+    (game.bawah = !1),
+    (game.kiri = !1),
+    (game.kanan = !1),
+    (joyStick.out = !1),
+    (joyStick.atas = !1),
+    (joyStick.bawah = !1),
+    (joyStick.kiri = !1),
+    (joyStick.kanan = !1));
 }
-//draw joyStick
 function gambarJoyStick() {
-  if (joyStick.stat && joyStick.out) {
-    konten.lineWidth = 5;
-    konten.strokeStyle = "#03fcf0";
-    konten.beginPath();
-    konten.arc(joyStick.px, joyStick.py, joyStick.rad, 0, 2 * Math.PI, false);
-    konten.stroke();
-    konten.beginPath();
-    konten.lineWidth = 3;
+  joyStick.stat &&
+    joyStick.out &&
+    ((konten.lineWidth = 5),
+    (konten.strokeStyle = "#03fcf0"),
+    konten.beginPath(),
+    konten.arc(joyStick.px, joyStick.py, joyStick.rad, 0, 2 * Math.PI, !1),
+    konten.stroke(),
+    konten.beginPath(),
+    (konten.lineWidth = 3),
     konten.arc(
       joyStick.px + joyStick.sx,
       joyStick.py + joyStick.sy,
       joyStick.rad / 2,
       0,
       2 * Math.PI,
-      false
-    );
-    konten.stroke();
-  }
+      !1
+    ),
+    konten.stroke());
 }
-function resizeBtn(px, py) {
-  if (dataGambar.maxBtn != undefined && dataGambar.minBtn != undefined) {
-    if (!game.fullscreen) {
-      sizeBtn = tombol(dataGambar.maxBtn, px, py);
-      if (tekan(sizeBtn)) {
-        game.fullscreen = true;
-        game.mouseDitekan = false;
-        openFullscreen();
-      }
-      if (document.fullscreenElement != null) {
-        game.fullscreen = true;
-        resize(true);
-      }
-    } else {
-      sizeBtn = tombol(dataGambar.minBtn, px, py);
-      if (tekan(sizeBtn)) {
-        game.fullscreen = false;
-        game.mouseDitekan = false;
-        closeFullscreen();
-      }
-      //escape
-      if (document.fullscreenElement === null) {
-        game.fullscreen = false;
-        resize(false);
-      }
-    }
-  }
+function resizeBtn(a, e) {
+  null != dataGambar.maxBtn &&
+    null != dataGambar.minBtn &&
+    (game.fullscreen
+      ? (tekan((sizeBtn = tombol(dataGambar.minBtn, a, e))) &&
+          ((game.fullscreen = !1), (game.mouseDitekan = !1), closeFullscreen()),
+        null === document.fullscreenElement &&
+          ((game.fullscreen = !1), resize(!1)))
+      : (tekan((sizeBtn = tombol(dataGambar.maxBtn, a, e))) &&
+          ((game.fullscreen = !0), (game.mouseDitekan = !1), openFullscreen()),
+        null != document.fullscreenElement &&
+          ((game.fullscreen = !0), resize(!0))));
 }
-
 function tiltWarn() {
   gambarFull(dataGambar.tilt);
 }
-
 function isOK() {
-  var res = true;
-  if (isMobile) {
-    if (game.fullscreen && game.orient != "landscape") {
-      res = false;
-    }
-  }
-  return res;
+  var a = !0;
+  return (
+    isMobile && game.fullscreen && "landscape" != game.orient && (a = !1), a
+  );
 }
-
-function cloneArray(arr) {
-  return JSON.parse(JSON.stringify(arr));
+function cloneArray(a) {
+  return JSON.parse(JSON.stringify(a));
 }
-/*------------------platformer tiling-------------------------
-Kode di bawah ini digunakan khusus untuk membuat tiling game platformer
-untuk membuat peta gunakan map editor yang bisa diunduh pada situs www.wandah.org/tiling-editor
-//------------------------------------------------------------*/
-function setPlatform(map, img, tileW, hero) {
-  game.map = map;
-  game.tilesetSize = img.width;
-  game.tileset = img;
-  game.tileW = tileW;
-  game.tile_num = Math.floor(game.tilesetSize / game.tileW);
-  // game.charX = 1; // HAPUS ATAU BERI KOMENTAR PADA BARIS INI
-  game.charY = 5; // HAPUS ATAU BERI KOMENTAR PADA BARIS INI
-  game.screenW = Math.floor(game.lebar / (game.tileW * game.skalaSprite)) + 2;
-  game.screenH = Math.floor(game.tinggi / (game.tileW * game.skalaSprite)) + 2;
-  trace("tile setup = " + game.screenW + " x " + game.screenH);
-  game.cameraX = 0;
-  game.cameraY = 0;
-  // game.posX = 0; // HAPUS ATAU BERI KOMENTAR PADA BARIS INI
-  // game.posY = 0; // HAPUS ATAU BERI KOMENTAR PADA BARIS INI
-  game.arenaX = -game.charX * game.tileW;
-  game.arenaY = -game.charY * game.tileW;
-  game.lompatY = 0;
-  game.karakter = hero;
-  game.itemID = 0;
-  game.musuhID = 0;
-  game.triggerID = 0;
-  game.gravitasi = 0.5;
-  game.type = "platformer";
-  game.deadAnim = false;
-  game.platformItems = {};
-  game.platformTrigger = {};
-  game.platformEnemies = [];
+function setPlatform(a, e, t, n) {
+  (game.map = a),
+    (game.tilesetSize = e.width),
+    (game.tileset = e),
+    (game.tileW = t),
+    (game.tile_num = Math.floor(game.tilesetSize / game.tileW)),
+    (game.charY = 5),
+    (game.screenW =
+      Math.floor(game.lebar / (game.tileW * game.skalaSprite)) + 2),
+    (game.screenH =
+      Math.floor(game.tinggi / (game.tileW * game.skalaSprite)) + 2),
+    trace("tile setup = " + game.screenW + " x " + game.screenH),
+    (game.cameraX = 0),
+    (game.cameraY = 0),
+    (game.arenaX = -game.charX * game.tileW),
+    (game.arenaY = -game.charY * game.tileW),
+    (game.lompatY = 0),
+    (game.karakter = n),
+    (game.itemID = 0),
+    (game.musuhID = 0),
+    (game.triggerID = 0),
+    (game.gravitasi = 0.5),
+    (game.type = "platformer"),
+    (game.deadAnim = !1),
+    (game.platformItems = {}),
+    (game.platformTrigger = {}),
+    (game.platformEnemies = []);
 }
-function setPlatformItem(id, img) {
-  game.platformItems["item_" + id] = img;
-  game.platformItems["frame_" + id] = Math.floor(img.width / game.tileW);
+function setPlatformItem(a, e) {
+  (game.platformItems["item_" + a] = e),
+    (game.platformItems["frame_" + a] = Math.floor(e.width / game.tileW));
 }
-function setPlatformTrigger(id, img) {
-  game.platformTrigger["item_" + id] = img;
-  game.platformTrigger["frame_" + id] = Math.floor(img.width / img.height);
+function setPlatformTrigger(a, e) {
+  (game.platformTrigger["item_" + a] = e),
+    (game.platformTrigger["frame_" + a] = Math.floor(e.width / e.height));
 }
-
-function sisa(num1, num2) {
-  var res = num1 - Math.floor(num1 / num2) * num2;
-  return res;
+function sisa(a, e) {
+  return a - Math.floor(a / e) * e;
 }
-
-// Di dalam file gameLib.js
 function buatLevel() {
-  var ox, oy, cx, cy;
-  var minX = Math.floor(game.charX - game.screenW / 2);
-  var minY = Math.floor(game.charY - game.screenH / 2);
-  for (var i = 0; i < game.screenW + 2; i++) {
-    for (var j = 0; j < game.screenH + 2; j++) {
-      var tx = i + minX;
-      var ty = j + minY;
-      if (
-        tx >= 0 &&
-        ty >= 0 &&
-        tx < game.map.length &&
-        ty < game.map[0].length
-      ) {
-        var t_type = game.map[tx][ty][1];
-        var t_mode = game.map[tx][ty][0];
-        var px =
-          -(game.posX * game.skalaSprite) +
-          game.cameraX +
-          (i - 1) * game.tileW * game.skalaSprite;
-        var py =
-          -(game.posY * game.skalaSprite) +
-          game.cameraY +
-          (j - 1) * game.tileW * game.skalaSprite;
-        //background
-        if (t_type > -1) {
-          var sy = Math.floor(t_type / game.tile_num);
-          var sx = t_type - sy * game.tile_num;
-          konten.drawImage(
-            game.tileset,
-            sx * game.tileW,
-            sy * game.tileW,
-            game.tileW,
-            game.tileW,
-            px,
-            py,
-            game.tileW * game.skalaSprite,
-            game.tileW * game.skalaSprite
-          );
-        }
-        var i_type = game.map[tx][ty][2];
-        //foreground
-        if (i_type > 0) {
-          var iy = Math.floor(i_type / game.tile_num);
-          var ix = i_type - iy * game.tile_num;
-          konten.drawImage(
-            game.tileset,
-            ix * game.tileW,
-            iy * game.tileW,
-            game.tileW,
-            game.tileW,
-            px,
-            py,
-            game.tileW * game.skalaSprite,
-            game.tileW * game.skalaSprite
-          );
-        }
-        //karakter
-        if (tx == game.charX && ty == game.charY && !game.deadAnim) {
-          game.karakter.x =
-            game.cameraX + (i - 1) * game.tileW * game.skalaSprite;
-          game.karakter.y =
+  for (
+    var a,
+      e,
+      t = Math.floor(game.charX - game.screenW / 2),
+      n = Math.floor(game.charY - game.screenH / 2),
+      m = 0;
+    m < game.screenW + 2;
+    m++
+  )
+    for (var i = 0; i < game.screenH + 2; i++) {
+      var r = m + t,
+        g = i + n;
+      if (r >= 0 && g >= 0 && r < game.map.length && g < game.map[0].length) {
+        var o = game.map[r][g][1],
+          s = game.map[r][g][0],
+          l =
+            -game.posX * game.skalaSprite +
+            game.cameraX +
+            (m - 1) * game.tileW * game.skalaSprite,
+          c =
+            -game.posY * game.skalaSprite +
             game.cameraY +
-            (j - 1) * game.tileW * game.skalaSprite +
-            (game.karakter.tinggi * game.skalaSprite) / 2;
+            (i - 1) * game.tileW * game.skalaSprite;
+        if (o > -1) {
+          var k = Math.floor(o / game.tile_num),
+            h = o - k * game.tile_num;
+          konten.drawImage(
+            game.tileset,
+            h * game.tileW,
+            k * game.tileW,
+            game.tileW,
+            game.tileW,
+            l,
+            c,
+            game.tileW * game.skalaSprite,
+            game.tileW * game.skalaSprite
+          );
         }
-        //items
-        if (t_mode == 3) {
-          var item_type = game.map[tx][ty][3];
-          if (item_type != undefined) {
-            if (game.platformItems["item_" + item_type] != undefined) {
-              var itemImg = game.platformItems["item_" + item_type];
-              var itemFrm = sisa(
-                game.timer,
-                game.platformItems["frame_" + item_type]
-              );
-              konten.drawImage(
-                itemImg,
-                itemFrm * game.tileW,
-                0,
-                game.tileW,
-                game.tileW,
-                px,
-                py,
-                game.tileW * game.skalaSprite,
-                game.tileW * game.skalaSprite
-              );
-              //hero dapat item
-              if (
-                jarak(
-                  game.karakter.x,
-                  game.karakter.y,
-                  px + (game.tileW * game.skalaSprite) / 2,
-                  py + (game.tileW * game.skalaSprite) / 2
-                ) < game.tileW
-              ) {
-                game.itemID = item_type;
-                game.map[tx][ty][0] = 0;
-              }
-            }
-          }
-        }
-        //trigger 7
-        if (t_mode == 7) {
-          var trigger_type = game.map[tx][ty][3];
-          if (trigger_type != undefined) {
-            if (game.platformTrigger["item_" + trigger_type] != undefined) {
-              var itemImg = game.platformTrigger["item_" + trigger_type];
-              var itemFrm = sisa(
-                game.timer,
-                game.platformTrigger["frame_" + trigger_type]
-              );
-              var itemW = Math.max(game.tileW, itemImg.height);
-              var gsr = (game.tileW - itemW) * game.skalaSprite;
-              konten.drawImage(
-                itemImg,
-                itemFrm * itemW,
-                0,
-                itemW,
-                itemW,
-                px + gsr,
-                py + gsr,
-                itemW * game.skalaSprite,
-                itemW * game.skalaSprite
-              );
-              if (tx == game.charX && ty == game.charY && game.aktif) {
-                game.triggerID = trigger_type;
-              }
-            }
-          }
-        }
-        // --- PERBAIKAN PENGGAMBARAN MUSUH ---
-        if (t_mode == 5) {
-          var m_id = game.map[tx][ty][4];
-          if (m_id != undefined) {
-            var musuh = game.platformEnemies[m_id];
-            // TAMBAHKAN PENGECEKAN INI: Hanya gambar musuh jika tidak mati
-            if (
-              musuh != undefined &&
-              (musuh.mati === undefined || musuh.mati === false)
-            ) {
-              musuh.x =
-                px +
-                musuh.posX * game.skalaSprite +
-                (game.tileW * game.skalaSprite) / 2;
-              musuh.y =
-                py +
-                musuh.posY * game.skalaSprite +
-                (game.tileW * game.skalaSprite) / 2;
-              loopSprite(musuh);
-            }
-          }
-        }
-        // --- AKHIR PERBAIKAN ---
-      }
-    }
-  }
-
-  gerakMusuh();
-
-  loopSprite(game.karakter);
-  if (game.aktif && game.type == "platformer") {
-    game.lompatY += game.gravitasi;
-    if (game.lompatY < 0) {
-      if (game.karakter.animLompat != 0)
-        game.karakter.img = game.karakter.animLompat;
-      oy =
-        game.posY +
-        game.lompatY +
-        (game.karakter.tinggi / 2) * game.skalaSprite;
-      cy = game.charY;
-      if (oy < 0) {
-        cy = game.charY - 1;
-      }
-      if (cy > 0) {
-        if (
-          game.map[game.charX][cy][0] == 0 ||
-          game.map[game.charX][cy][0] == 8 ||
-          game.map[game.charX][cy][0] == 3 ||
-          game.map[game.charX][cy][0] == 5 ||
-          game.map[game.charX][cy][0] == 7
-        ) {
-          game.posY += game.lompatY;
-          if (game.posY < 0) {
-            game.posY += game.tileW;
-            game.charY--;
-          }
-        }
-        if (game.map[game.charX][cy][0] == 1) game.lompatY = 0;
-        if (game.map[game.charX][cy][0] == 10) heroDead();
-      }
-    }
-    if (game.lompatY > 0) {
-      if (game.karakter.animJatuh != 0)
-        game.karakter.img = game.karakter.animJatuh;
-      game.lompat = true;
-      oy =
-        game.posY +
-        game.lompatY +
-        (game.karakter.tinggi / 2) * game.skalaSprite;
-      cy = game.charY;
-      if (oy > game.tileW) {
-        cy = game.charY + 1;
-      }
-      if (cy < game.map[0].length) {
-        if (
-          game.map[game.charX][cy][0] == 0 ||
-          game.map[game.charX][cy][0] == 3 ||
-          game.map[game.charX][cy][0] == 5 ||
-          game.map[game.charX][cy][0] == 7
-        ) {
-          game.posY += game.lompatY;
-          if (game.posY > game.tileW) {
-            game.posY -= game.tileW;
-            game.charY++;
-          }
+        var f = game.map[r][g][2];
+        if (f > 0) {
+          var u = Math.floor(f / game.tile_num),
+            p = f - u * game.tile_num;
+          konten.drawImage(
+            game.tileset,
+            p * game.tileW,
+            u * game.tileW,
+            game.tileW,
+            game.tileW,
+            l,
+            c,
+            game.tileW * game.skalaSprite,
+            game.tileW * game.skalaSprite
+          );
         }
         if (
-          game.map[game.charX][cy][0] == 1 ||
-          game.map[game.charX][cy][0] == 8
+          (r != game.charX ||
+            g != game.charY ||
+            game.deadAnim ||
+            ((game.karakter.x =
+              game.cameraX + (m - 1) * game.tileW * game.skalaSprite),
+            (game.karakter.y =
+              game.cameraY +
+              (i - 1) * game.tileW * game.skalaSprite +
+              (game.karakter.tinggi * game.skalaSprite) / 2)),
+          3 == s)
         ) {
-          game.lompatY = 0;
-          game.lompat = false;
-          game.posY = 0;
-          if (game.karakter.animDiam != 0)
-            game.karakter.img = game.karakter.animDiam;
+          var d = game.map[r][g][3];
+          if (null != d && null != game.platformItems["item_" + d]) {
+            var v = game.platformItems["item_" + d],
+              b = sisa(game.timer, game.platformItems["frame_" + d]);
+            konten.drawImage(
+              v,
+              b * game.tileW,
+              0,
+              game.tileW,
+              game.tileW,
+              l,
+              c,
+              game.tileW * game.skalaSprite,
+              game.tileW * game.skalaSprite
+            ),
+              jarak(
+                game.karakter.x,
+                game.karakter.y,
+                l + (game.tileW * game.skalaSprite) / 2,
+                c + (game.tileW * game.skalaSprite) / 2
+              ) < game.tileW && ((game.itemID = d), (game.map[r][g][0] = 0));
+          }
         }
-        if (game.map[game.charX][cy][0] == 10) heroDead();
+        if (7 == s) {
+          var y = game.map[r][g][3];
+          if (null != y && null != game.platformTrigger["item_" + y]) {
+            (v = game.platformTrigger["item_" + y]),
+              (b = sisa(game.timer, game.platformTrigger["frame_" + y]));
+            var w = Math.max(game.tileW, v.height),
+              S = (game.tileW - w) * game.skalaSprite;
+            konten.drawImage(
+              v,
+              b * w,
+              0,
+              w,
+              w,
+              l + S,
+              c + S,
+              w * game.skalaSprite,
+              w * game.skalaSprite
+            ),
+              r == game.charX &&
+                g == game.charY &&
+                game.aktif &&
+                (game.triggerID = y);
+          }
+        }
+        if (5 == s) {
+          var x = game.map[r][g][4];
+          if (null != x) {
+            var Y = game.platformEnemies[x];
+            null == Y ||
+              (void 0 !== Y.mati && !1 !== Y.mati) ||
+              ((Y.x =
+                l +
+                Y.posX * game.skalaSprite +
+                (game.tileW * game.skalaSprite) / 2),
+              (Y.y =
+                c +
+                Y.posY * game.skalaSprite +
+                (game.tileW * game.skalaSprite) / 2),
+              loopSprite(Y));
+          }
+        }
       }
     }
-  }
-
-  if (game.deadAnim && game.type == "platformer") {
-    game.lompatY += game.gravitasi;
-    game.karakter.y += game.lompatY;
-    game.karakter.rotasi += 2;
-    if (game.karakter.y > game.tinggi) {
-      game.deadAnim = false;
-      ulangiPermainan();
-    }
-  }
+  gerakMusuh(),
+    loopSprite(game.karakter),
+    game.aktif &&
+      "platformer" == game.type &&
+      ((game.lompatY += game.gravitasi),
+      game.lompatY < 0 &&
+        (0 != game.karakter.animLompat &&
+          (game.karakter.img = game.karakter.animLompat),
+        (a =
+          game.posY +
+          game.lompatY +
+          (game.karakter.tinggi / 2) * game.skalaSprite),
+        (e = game.charY),
+        a < 0 && (e = game.charY - 1),
+        e > 0 &&
+          ((0 != game.map[game.charX][e][0] &&
+            8 != game.map[game.charX][e][0] &&
+            3 != game.map[game.charX][e][0] &&
+            5 != game.map[game.charX][e][0] &&
+            7 != game.map[game.charX][e][0]) ||
+            ((game.posY += game.lompatY),
+            game.posY < 0 && ((game.posY += game.tileW), game.charY--)),
+          1 == game.map[game.charX][e][0] && (game.lompatY = 0),
+          10 == game.map[game.charX][e][0] && heroDead())),
+      game.lompatY > 0 &&
+        (0 != game.karakter.animJatuh &&
+          (game.karakter.img = game.karakter.animJatuh),
+        (game.lompat = !0),
+        (a =
+          game.posY +
+          game.lompatY +
+          (game.karakter.tinggi / 2) * game.skalaSprite),
+        (e = game.charY),
+        a > game.tileW && (e = game.charY + 1),
+        e < game.map[0].length &&
+          ((0 != game.map[game.charX][e][0] &&
+            3 != game.map[game.charX][e][0] &&
+            5 != game.map[game.charX][e][0] &&
+            7 != game.map[game.charX][e][0]) ||
+            ((game.posY += game.lompatY),
+            game.posY > game.tileW &&
+              ((game.posY -= game.tileW), game.charY++)),
+          (1 != game.map[game.charX][e][0] &&
+            8 != game.map[game.charX][e][0]) ||
+            ((game.lompatY = 0),
+            (game.lompat = !1),
+            (game.posY = 0),
+            0 != game.karakter.animDiam &&
+              (game.karakter.img = game.karakter.animDiam)),
+          10 == game.map[game.charX][e][0] && heroDead()))),
+    game.deadAnim &&
+      "platformer" == game.type &&
+      ((game.lompatY += game.gravitasi),
+      (game.karakter.y += game.lompatY),
+      (game.karakter.rotasi += 2),
+      game.karakter.y > game.tinggi &&
+        ((game.deadAnim = !1), ulangiPermainan()));
 }
-
-function jalankanFungsi(func) {
-  if (func != null) func();
+function jalankanFungsi(a) {
+  null != a && a();
 }
-
-// file: gameLib.js
 function heroDead() {
-  game.aktif = false;
-  mainkanSuara(dataSuara.paku); // Mainkan suara mati
-  game.karakter.playOnce = true;
-  if (game.karakter.animMati != 0) {
-    game.karakter.img = game.karakter.animMati;
-    game.karakter.frame = 1;
-  }
-  game.deadAnim = true;
-  game.lompatY = -10;
+  (game.aktif = !1),
+    mainkanSuara(dataSuara.paku),
+    (game.karakter.playOnce = !0),
+    0 != game.karakter.animMati &&
+      ((game.karakter.img = game.karakter.animMati), (game.karakter.frame = 1)),
+    (game.deadAnim = !0),
+    (game.lompatY = -10);
 }
-
-function gerakLevel(ob, sx, sy) {
-  var ox, oy, cx, cy;
-  if (game.aktif) {
-    if (sx > 0) {
-      //kanan
-      if (!game.lompat) {
-        if (ob.animJalan != 0) ob.img = ob.animJalan;
-      }
-      ox = game.posX + ob.lebar / 2 + sx - 5;
-      ob.skalaX = 1;
-      cx = game.charX;
-      if (ox > game.tileW) {
-        cx = game.charX + 1;
-      }
-      if (cx < game.map.length) {
-        if (
-          game.map[cx][game.charY][0] == 0 ||
-          game.map[cx][game.charY][0] == 3 ||
-          game.map[cx][game.charY][0] == 5 ||
-          game.map[cx][game.charY][0] == 8 ||
-          game.map[cx][game.charY][0] == 7
-        ) {
-          game.posX += sx;
-          if (game.posX > game.tileW) {
-            game.posX -= game.tileW;
-            game.charX++;
-          }
-        }
-        //dead
-        if (game.map[cx][game.charY][0] == 10) heroDead();
-      }
-    }
-    if (sx < 0) {
-      //kiri
-      if (!game.lompat) {
-        if (ob.animJalan != 0) ob.img = ob.animJalan;
-      }
-      ox = game.posX + sx - ob.lebar / 2 + 5;
-      ob.skalaX = -1;
-      cx = game.charX;
-      if (ox < 0) {
-        cx = game.charX - 1;
-      }
-      if (cx > 0) {
-        if (
-          game.map[cx][game.charY][0] == 0 ||
-          game.map[cx][game.charY][0] == 3 ||
-          game.map[cx][game.charY][0] == 5 ||
-          game.map[cx][game.charY][0] == 8 ||
-          game.map[cx][game.charY][0] == 7
-        ) {
-          game.posX += sx;
-          if (game.posX < 0) {
-            game.posX += game.tileW;
-            game.charX--;
-          }
-        }
-      }
-      //dead
-      if (game.map[cx][game.charY][0] == 10) heroDead();
-    }
-    //lompat
-    if (sy < 0 && !game.lompat) {
-      game.lompat = true;
-      game.lompatY = sy;
-    }
-  }
+function gerakLevel(a, e, t) {
+  var n, m;
+  game.aktif &&
+    (e > 0 &&
+      (game.lompat || (0 != a.animJalan && (a.img = a.animJalan)),
+      (n = game.posX + a.lebar / 2 + e - 5),
+      (a.skalaX = 1),
+      (m = game.charX),
+      n > game.tileW && (m = game.charX + 1),
+      m < game.map.length &&
+        ((0 != game.map[m][game.charY][0] &&
+          3 != game.map[m][game.charY][0] &&
+          5 != game.map[m][game.charY][0] &&
+          8 != game.map[m][game.charY][0] &&
+          7 != game.map[m][game.charY][0]) ||
+          ((game.posX += e),
+          game.posX > game.tileW && ((game.posX -= game.tileW), game.charX++)),
+        10 == game.map[m][game.charY][0] && heroDead())),
+    e < 0 &&
+      (game.lompat || (0 != a.animJalan && (a.img = a.animJalan)),
+      (n = game.posX + e - a.lebar / 2 + 5),
+      (a.skalaX = -1),
+      (m = game.charX),
+      n < 0 && (m = game.charX - 1),
+      m > 0 &&
+        ((0 != game.map[m][game.charY][0] &&
+          3 != game.map[m][game.charY][0] &&
+          5 != game.map[m][game.charY][0] &&
+          8 != game.map[m][game.charY][0] &&
+          7 != game.map[m][game.charY][0]) ||
+          ((game.posX += e),
+          game.posX < 0 && ((game.posX += game.tileW), game.charX--))),
+      10 == game.map[m][game.charY][0] && heroDead()),
+    t < 0 && !game.lompat && ((game.lompat = !0), (game.lompatY = t)));
 }
-
-function setPlatformEnemy(id, ob) {
-  //loop cari posisi musuh tile id = 5
-  for (var i = 0; i < game.map.length; i++) {
-    for (var j = 0; j < game.map[0].length; j++) {
-      if (game.map[i][j][0] == 5 && game.map[i][j][3] == id) {
-        // --- PERUBAHAN: Atur ukuran sprite berdasarkan ID musuh ---
-        var musuh;
-        if (id === 3) {
-          // Jika ini musuh Bunga (ID 3), gunakan ukuran 44x42
-          musuh = setSprite(ob.animDiam, 44, 42);
-        } else {
-          // Untuk musuh lainnya, gunakan ukuran default 32x32
-          musuh = setSprite(ob.animDiam, 32, 32);
-        }
-        // --- AKHIR PERUBAHAN ---
-
-        musuh.dataGambar = ob;
-        musuh.charX = i;
-        musuh.charY = j;
-        musuh.posX = 0;
-        musuh.posY = 0;
-        musuh.stat = 0;
-        musuh.sx = 0;
-        musuh.sy = 0;
-        musuh.eTipe = id;
-        musuh.count = 0;
-        musuh.id = game.platformEnemies.length;
-        game.platformEnemies.push(musuh);
-        //tambahkan id baru ke peta
-        game.map[i][j][4] = musuh.id;
-      }
+function setPlatformEnemy(a, e) {
+  for (var t = 0; t < game.map.length; t++)
+    for (var n = 0; n < game.map[0].length; n++) {
+      var m;
+      if (5 == game.map[t][n][0] && game.map[t][n][3] == a)
+        ((m =
+          3 === a
+            ? setSprite(e.animDiam, 44, 42)
+            : setSprite(e.animDiam, 32, 32)).dataGambar = e),
+          (m.charX = t),
+          (m.charY = n),
+          (m.posX = 0),
+          (m.posY = 0),
+          (m.stat = 0),
+          (m.sx = 0),
+          (m.sy = 0),
+          (m.eTipe = a),
+          (m.count = 0),
+          (m.id = game.platformEnemies.length),
+          game.platformEnemies.push(m),
+          (game.map[t][n][4] = m.id);
     }
-  }
 }
-
-// Di dalam file gameLib.js
-// file: gameLib.js
-
 function gerakMusuh() {
-  var ox, oy, cx, cy;
-  for (var m = 0; m < game.platformEnemies.length; m++) {
-    var musuh = game.platformEnemies[m];
-    if (musuh.stat === 3) continue;
-
-    // Logika untuk Musuh Berjalan (ID 1 & 2) - TIDAK DIUBAH
-    if (musuh.eTipe === 1 || musuh.eTipe === 2) {
-      if (musuh.stat < 2) {
-        if (acak(300) == 134) {
-          musuh.stat = 0;
-          musuh.sx = 0;
-          musuh.img = musuh.dataGambar.animDiam;
-        }
-        if (acak(100) == 14 && musuh.stat == 0) {
-          musuh.stat = 1;
-          musuh.img = musuh.dataGambar.animJalan;
-          musuh.sx = acak(2) == 1 ? 0.5 : -0.5;
-        }
-      }
-      if (musuh.stat == 1) {
-        game.map[musuh.charX][musuh.charY][0] = 0;
-        if (musuh.sx > 0) {
-          ox = musuh.posX + musuh.lebar / 2 + musuh.sx;
-          cx = musuh.charX;
-          musuh.skalaX = 1;
-          if (ox > game.tileW) cx = musuh.charX + 1;
-          if (cx < game.map.length) {
-            if (game.map[cx][musuh.charY][0] == 0) {
-              musuh.posX += musuh.sx;
-              if (musuh.posX > game.tileW) {
-                musuh.posX -= game.tileW;
-                musuh.charX++;
-              }
-            }
-            if (
-              game.map[cx][musuh.charY][0] == 1 ||
-              game.map[cx][musuh.charY + 1][0] == 0
-            )
-              musuh.sx *= -1;
-          }
-        } else if (musuh.sx < 0) {
-          ox = musuh.posX - musuh.lebar / 2 + musuh.sx;
-          cx = musuh.charX;
-          musuh.skalaX = -1;
-          if (ox < 0) cx = musuh.charX - 1;
-          if (cx > 0) {
-            if (game.map[cx][musuh.charY][0] == 0) {
-              musuh.posX += musuh.sx;
-              if (musuh.posX < 0) {
-                musuh.posX += game.tileW;
-                musuh.charX--;
-              }
-            }
-            if (
-              game.map[cx][musuh.charY][0] == 1 ||
-              game.map[cx][musuh.charY + 1][0] == 0
-            )
-              musuh.sx *= -1;
-          }
-        }
-        game.map[musuh.charX][musuh.charY][0] = 5;
-        game.map[musuh.charX][musuh.charY][3] = musuh.eTipe;
-        game.map[musuh.charX][musuh.charY][4] = musuh.id;
-      }
-    }
-    // Logika Musuh Bunga (ID 3) - TIDAK DIUBAH
-    else if (musuh.eTipe === 3) {
-      // Cek jika pemain ada di sebelah KIRI bunga
-      if (game.karakter.x < musuh.x && game.aktif) {
-        // JIKA PEMAIN DI KIRI: Bunga menjadi AKTIF dan MENEMBAK
-        musuh.skalaX = 1; // Menghadap ke kiri
-        musuh.img = musuh.dataGambar.animSerang;
-
-        // Logika timer untuk menembak
-        if (musuh.cooldown === undefined) musuh.cooldown = 180;
-        if (musuh.cooldown > 0) musuh.cooldown--;
-        if (musuh.cooldown <= 0) {
-          tembakPeluru(musuh);
-          musuh.cooldown = 180; // Reset timer
-        }
-      } else {
-        // JIKA PEMAIN DI KANAN: Bunga menjadi DIAM
-        // musuh.skalaX = -1;
-        musuh.img = musuh.dataGambar.animDiam;
-        if (musuh.cooldown !== undefined) musuh.cooldown = 180;
-      }
-    }
-
-    // ====================================================================
-    // === LOGIKA TABRAKAN BARU (DIPISAH BERDASARKAN TIPE MUSUH) ===
-    // ====================================================================
-    if (musuh.stat !== 2 && musuh.stat !== 3 && game.aktif) {
-      if (
-        jarak(game.karakter.x, game.karakter.y, musuh.x, musuh.y) <
-        game.tileW - 5
-      ) {
-        // --- Logika Khusus untuk Musuh Berjalan (ID 1 & 2) ---
-        if (musuh.eTipe === 1 || musuh.eTipe === 2) {
-          // PERUBAHAN: Area injak diperluas. Cukup cek jika posisi pemain lebih tinggi dari musuh.
-          if (game.lompatY > 0 && game.karakter.y < musuh.y) {
-            musuh.stat = 2; // Musuh mati
-            game.lompatY = -7; // Pemain memantul
-            game.musuhID = musuh.eTipe;
-          } else {
-            heroDead(); // Jika tidak menginjak dari atas, pemain mati
-          }
-        }
-
-        // --- Logika untuk Musuh Bunga (ID 3) ---
-        else if (musuh.eTipe === 3) {
-          // Gunakan logika injak yang lebih sempit karena bentuknya berbeda
-          if (
+  for (var a, e, t = 0; t < game.platformEnemies.length; t++) {
+    var n = game.platformEnemies[t];
+    3 !== n.stat &&
+      (1 === n.eTipe || 2 === n.eTipe
+        ? (n.stat < 2 &&
+            (134 == acak(300) &&
+              ((n.stat = 0), (n.sx = 0), (n.img = n.dataGambar.animDiam)),
+            14 == acak(100) &&
+              0 == n.stat &&
+              ((n.stat = 1),
+              (n.img = n.dataGambar.animJalan),
+              (n.sx = 1 == acak(2) ? 0.5 : -0.5))),
+          1 == n.stat &&
+            ((game.map[n.charX][n.charY][0] = 0),
+            n.sx > 0
+              ? ((a = n.posX + n.lebar / 2 + n.sx),
+                (e = n.charX),
+                (n.skalaX = 1),
+                a > game.tileW && (e = n.charX + 1),
+                e < game.map.length &&
+                  (0 == game.map[e][n.charY][0] &&
+                    ((n.posX += n.sx),
+                    n.posX > game.tileW && ((n.posX -= game.tileW), n.charX++)),
+                  (1 != game.map[e][n.charY][0] &&
+                    0 != game.map[e][n.charY + 1][0]) ||
+                    (n.sx *= -1)))
+              : n.sx < 0 &&
+                ((a = n.posX - n.lebar / 2 + n.sx),
+                (e = n.charX),
+                (n.skalaX = -1),
+                a < 0 && (e = n.charX - 1),
+                e > 0 &&
+                  (0 == game.map[e][n.charY][0] &&
+                    ((n.posX += n.sx),
+                    n.posX < 0 && ((n.posX += game.tileW), n.charX--)),
+                  (1 != game.map[e][n.charY][0] &&
+                    0 != game.map[e][n.charY + 1][0]) ||
+                    (n.sx *= -1))),
+            (game.map[n.charX][n.charY][0] = 5),
+            (game.map[n.charX][n.charY][3] = n.eTipe),
+            (game.map[n.charX][n.charY][4] = n.id)))
+        : 3 === n.eTipe &&
+          (game.karakter.x < n.x && game.aktif
+            ? ((n.skalaX = 1),
+              (n.img = n.dataGambar.animSerang),
+              void 0 === n.cooldown && (n.cooldown = 180),
+              n.cooldown > 0 && n.cooldown--,
+              n.cooldown <= 0 && (tembakPeluru(n), (n.cooldown = 180)))
+            : ((n.img = n.dataGambar.animDiam),
+              void 0 !== n.cooldown && (n.cooldown = 180))),
+      2 !== n.stat &&
+        3 !== n.stat &&
+        game.aktif &&
+        jarak(game.karakter.x, game.karakter.y, n.x, n.y) < game.tileW - 5 &&
+        (1 === n.eTipe || 2 === n.eTipe
+          ? game.lompatY > 0 && game.karakter.y < n.y
+            ? ((n.stat = 2), (game.lompatY = -7), (game.musuhID = n.eTipe))
+            : heroDead()
+          : 3 === n.eTipe &&
             game.lompatY > 0 &&
-            game.karakter.y < musuh.y - musuh.tinggi / 3
-          ) {
-            musuh.stat = 2; // Musuh mati
-            game.lompatY = -7;
-            game.musuhID = musuh.eTipe;
-          }
-          // Pemain tidak mati jika menyentuh bunga dari samping
-        }
-      }
-    }
-
-    // Logika Animasi Kematian (Berlaku untuk semua musuh)
-    if (musuh.stat === 2) {
-      musuh.img = musuh.dataGambar.animMati;
-      if (musuh.count === undefined) musuh.count = 0;
-      musuh.count++;
-      if (musuh.count > 20) {
-        musuh.stat = 3;
-        game.map[musuh.charX][musuh.charY][0] = 0;
-      }
-    }
+            game.karakter.y < n.y - n.tinggi / 3 &&
+            ((n.stat = 2), (game.lompatY = -7), (game.musuhID = n.eTipe))),
+      2 === n.stat &&
+        ((n.img = n.dataGambar.animMati),
+        void 0 === n.count && (n.count = 0),
+        n.count++,
+        n.count > 20 && ((n.stat = 3), (game.map[n.charX][n.charY][0] = 0))));
   }
 }
-
-function kotak(x, y, p, l, tbl = 1, sclr = "#000", fclr = "none", alp = 100) {
-  konten.beginPath();
-  konten.rect(x, y, p, l);
-  if (fclr != "none") {
-    konten.fillStyle = fclr;
-    konten.globalAlpha = alp / 100;
-    konten.fill();
-    konten.globalAlpha = 1;
-  }
-  if (sclr != "none") {
-    konten.lineWidth = tbl;
-    konten.strokeStyle = sclr;
-    konten.stroke();
-  }
+function kotak(a, e, t, n, m = 1, i = "#000", r = "none", g = 100) {
+  konten.beginPath(),
+    konten.rect(a, e, t, n),
+    "none" != r &&
+      ((konten.fillStyle = r),
+      (konten.globalAlpha = g / 100),
+      konten.fill(),
+      (konten.globalAlpha = 1)),
+    "none" != i &&
+      ((konten.lineWidth = m), (konten.strokeStyle = i), konten.stroke());
 }
-/*------------------------------------- Efek transisi----------------------
-transisi digunakan untuk memberikan efek wipe pada saat pergantian scene
-game.transisi = true/false
-tambahTransisi(tipe ="in/out", func)
-
-untuk ubah warna bisa diset game.warnaTransisi = kodewarna
-
-render --> efekTransisi();
----------------------------------------------------------------------------*/
-function transisi(tipe, func = null, px = 0, py = 0) {
-  game.lastAktif = game.aktif;
-  game.aktif = false;
-  game.transisi = true;
-  game.transisiStat = 0;
-  game.transisiX = px;
-  game.transisiY = py;
-  if (px == 0 && py == 0) {
-    game.transisiX = game.lebar / 2;
-    game.transisiY = game.tinggi / 2;
-  }
-  game.transisiTipe = tipe;
-  game.transisiFunc = func;
-  game.transisiTimer = 0;
-  trace("transisi wipe " + tipe + " " + px + " " + py);
+function transisi(a, e = null, t = 0, n = 0) {
+  (game.lastAktif = game.aktif),
+    (game.aktif = !1),
+    (game.transisi = !0),
+    (game.transisiStat = 0),
+    (game.transisiX = t),
+    (game.transisiY = n),
+    0 == t &&
+      0 == n &&
+      ((game.transisiX = game.lebar / 2), (game.transisiY = game.tinggi / 2)),
+    (game.transisiTipe = a),
+    (game.transisiFunc = e),
+    (game.transisiTimer = 0),
+    trace("transisi wipe " + a + " " + t + " " + n);
 }
-
 function efekTransisi() {
-  var rad;
+  var a;
   if (game.transisi) {
-    if (game.transisiTipe != "in" && game.transisiTipe != "out") {
-      game.transisi = false;
-      game.aktif = game.lastAktif;
-      return;
-    }
-    if (game.transisiTipe == "out") {
-      game.transisiTimer += 5;
-      rad = game.lebar / 2 - game.transisiTimer * 2;
-      if (rad < 2) {
-        //transisi selesai
-        game.transisi = false;
-        game.transisiTimer = 0;
-        game.aktif = true;
-        if (game.transisiFunc != null) jalankanFungsi(game.transisiFunc);
-      } else {
-        konten.beginPath();
-        konten.arc(
-          game.transisiX,
-          game.transisiY,
-          game.lebar * 2,
-          0,
-          2 * Math.PI,
-          false
-        );
-        konten.arc(game.transisiX, game.transisiY, rad, 0, 2 * Math.PI, false);
-        konten.fillStyle = game.warnaTransisi;
-        konten.fill("evenodd");
-      }
-    }
-    if (game.transisiTipe == "in") {
-      game.transisiTimer += 5;
-      rad = game.transisiTimer * 2;
-      if (rad > game.lebar / 2) {
-        //transisi selesai
-        game.transisi = false;
-        game.transisiTimer = 0;
-        game.aktif = true;
-        if (game.transisiFunc != null) jalankanFungsi(game.transisiFunc);
-      } else {
-        konten.beginPath();
-        konten.arc(
-          game.transisiX,
-          game.transisiY,
-          game.lebar * 2,
-          0,
-          2 * Math.PI,
-          false
-        );
-        konten.arc(game.transisiX, game.transisiY, rad, 0, 2 * Math.PI, false);
-        konten.fillStyle = game.warnaTransisi;
-        konten.fill("evenodd");
-      }
-    }
+    if ("in" != game.transisiTipe && "out" != game.transisiTipe)
+      return (game.transisi = !1), void (game.aktif = game.lastAktif);
+    "out" == game.transisiTipe &&
+      ((game.transisiTimer += 5),
+      (a = game.lebar / 2 - 2 * game.transisiTimer) < 2
+        ? ((game.transisi = !1),
+          (game.transisiTimer = 0),
+          (game.aktif = !0),
+          null != game.transisiFunc && jalankanFungsi(game.transisiFunc))
+        : (konten.beginPath(),
+          konten.arc(
+            game.transisiX,
+            game.transisiY,
+            2 * game.lebar,
+            0,
+            2 * Math.PI,
+            !1
+          ),
+          konten.arc(game.transisiX, game.transisiY, a, 0, 2 * Math.PI, !1),
+          (konten.fillStyle = game.warnaTransisi),
+          konten.fill("evenodd"))),
+      "in" == game.transisiTipe &&
+        ((game.transisiTimer += 5),
+        (a = 2 * game.transisiTimer) > game.lebar / 2
+          ? ((game.transisi = !1),
+            (game.transisiTimer = 0),
+            (game.aktif = !0),
+            null != game.transisiFunc && jalankanFungsi(game.transisiFunc))
+          : (konten.beginPath(),
+            konten.arc(
+              game.transisiX,
+              game.transisiY,
+              2 * game.lebar,
+              0,
+              2 * Math.PI,
+              !1
+            ),
+            konten.arc(game.transisiX, game.transisiY, a, 0, 2 * Math.PI, !1),
+            (konten.fillStyle = game.warnaTransisi),
+            konten.fill("evenodd")));
   }
 }
-/*------------------RPG tiling-------------------------
-Kode di bawah ini digunakan khusus untuk membuat RPG GAME (porting dari jsRPG)
-untuk membuat peta gunakan map editor yang bisa diunduh pada situs www.wandah.org/tiling-editor
-//------------------------------------------------------------*/
-function setRPGSprite(img, lebar = 0, tinggi = 0) {
-  var ob = {};
-  var imgW = img.width;
-  var imgH = img.height;
-  ob.img = img;
-  if (lebar == 0 || tinggi == 0) {
-    ob.lebar = img.width;
-    ob.tinggi = img.height;
-  } else {
-    ob.lebar = lebar;
-    ob.tinggi = tinggi;
-  }
-  var divX = Math.floor(imgW / ob.lebar);
-  var divY = Math.floor(imgH / ob.tinggi);
-  var maxFrame = divX * divY;
-  ob.x = 0;
-  ob.y = 0;
-  ob.frame = 1;
-  ob.skalaX = 1;
-  ob.skalaY = 1;
-  ob.rotasi = 0;
-  ob.timer = 0;
-  ob.offsetX = 2;
-  ob.offsetY = 1;
-  ob.playOnce = false;
-  ob.mati = false;
-  ob.maxFrame = maxFrame;
-  ob.diamKanan = "1-6";
-  ob.diamAtas = "7-12";
-  ob.diamKiri = "13-18";
-  ob.diamBawah = "19-24";
-  ob.jalanKanan = "25-30";
-  ob.jalanAtas = "31-36";
-  ob.jalanKiri = "37-42";
-  ob.jalanBawah = "43-48";
-  ob.frameAktif = ob.diamBawah;
-  ob.langkah = 0;
-  return ob;
+function setRPGSprite(a, e = 0, t = 0) {
+  var n = {},
+    m = a.width,
+    i = a.height;
+  (n.img = a),
+    0 == e || 0 == t
+      ? ((n.lebar = a.width), (n.tinggi = a.height))
+      : ((n.lebar = e), (n.tinggi = t));
+  var r = Math.floor(m / n.lebar) * Math.floor(i / n.tinggi);
+  return (
+    (n.x = 0),
+    (n.y = 0),
+    (n.frame = 1),
+    (n.skalaX = 1),
+    (n.skalaY = 1),
+    (n.rotasi = 0),
+    (n.timer = 0),
+    (n.offsetX = 2),
+    (n.offsetY = 1),
+    (n.playOnce = !1),
+    (n.mati = !1),
+    (n.maxFrame = r),
+    (n.diamKanan = "1-6"),
+    (n.diamAtas = "7-12"),
+    (n.diamKiri = "13-18"),
+    (n.diamBawah = "19-24"),
+    (n.jalanKanan = "25-30"),
+    (n.jalanAtas = "31-36"),
+    (n.jalanKiri = "37-42"),
+    (n.jalanBawah = "43-48"),
+    (n.frameAktif = n.diamBawah),
+    (n.langkah = 0),
+    n
+  );
 }
-function setRPG(mapID, img, tileW, hero) {
-  game.map = this["map_" + mapID];
-  game.tilesetSize = img.width;
-  game.tileset = img;
-  game.tileW = tileW;
-  game.tile_num = Math.floor(game.tilesetSize / game.tileW);
-  game.charX = hero.charX;
-  game.charY = hero.charY;
-  game.screenW = Math.floor(game.lebar / (game.tileW * game.skalaSprite)) + 2;
-  game.screenH = Math.floor(game.tinggi / (game.tileW * game.skalaSprite)) + 2;
-  trace("RPG tile setup = " + game.screenW + " x " + game.screenH);
-  game.cameraX = 0;
-  game.cameraY = 0;
-  game.posX = game.tileW / 2;
-  game.posY = 0;
-  game.arenaX = -game.charX * game.tileW;
-  game.arenaY = -game.charY * game.tileW;
-  game.lompatY = 0;
-  game.karakter = hero;
-  game.itemID = 0;
-  game.musuhID = 0;
-  game.triggerID = 0;
-  game.arah = 1;
-  game.mapID = mapID;
-  game.doorX = 0;
-  game.doorY = 0;
-  game.lastMap = game.mapID;
-  game.type = "RPG";
-  game.rpgItem = {};
-  game.aksi = null;
-  game.renderItem = [];
-  game.itemDB = [];
-  game.itemRendered = false;
-  game.karakter.aksi = "";
+function setRPG(a, e, t, n) {
+  (game.map = this["map_" + a]),
+    (game.tilesetSize = e.width),
+    (game.tileset = e),
+    (game.tileW = t),
+    (game.tile_num = Math.floor(game.tilesetSize / game.tileW)),
+    (game.charX = n.charX),
+    (game.charY = n.charY),
+    (game.screenW =
+      Math.floor(game.lebar / (game.tileW * game.skalaSprite)) + 2),
+    (game.screenH =
+      Math.floor(game.tinggi / (game.tileW * game.skalaSprite)) + 2),
+    trace("RPG tile setup = " + game.screenW + " x " + game.screenH),
+    (game.cameraX = 0),
+    (game.cameraY = 0),
+    (game.posX = game.tileW / 2),
+    (game.posY = 0),
+    (game.arenaX = -game.charX * game.tileW),
+    (game.arenaY = -game.charY * game.tileW),
+    (game.lompatY = 0),
+    (game.karakter = n),
+    (game.itemID = 0),
+    (game.musuhID = 0),
+    (game.triggerID = 0),
+    (game.arah = 1),
+    (game.mapID = a),
+    (game.doorX = 0),
+    (game.doorY = 0),
+    (game.lastMap = game.mapID),
+    (game.type = "RPG"),
+    (game.rpgItem = {}),
+    (game.aksi = null),
+    (game.renderItem = []),
+    (game.itemDB = []),
+    (game.itemRendered = !1),
+    (game.karakter.aksi = "");
 }
-
-function setRPGItem(id, img2, p = 0, l = 0) {
-  game.itemDB.push([id, img2, p, l]);
+function setRPGItem(a, e, t = 0, n = 0) {
+  game.itemDB.push([a, e, t, n]);
 }
-
 function setRenderItem() {
   if (!game.itemRendered) {
-    game.itemRendered = true;
-    for (var i = 0; i < game.map.length; i++) {
-      for (var j = 0; j < game.map[0].length; j++) {
+    game.itemRendered = !0;
+    for (var a = 0; a < game.map.length; a++)
+      for (var e = 0; e < game.map[0].length; e++)
         for (k = 0; k < game.itemDB.length; k++) {
-          var ob = game.itemDB[k];
-          if (game.map[i][j][0] == 3 && game.map[i][j][3] == ob[0]) {
-            var ix = i * game.tileW * game.skalaSprite;
-            var iy = j * game.tileW * game.skalaSprite;
-            var dataItem = setSprite(ob[1], ob[2], ob[3]);
-            dataItem.px = ix;
-            dataItem.py = iy;
-            dataItem.tileX = i;
-            dataItem.tileY = j;
-            game.renderItem.push(dataItem);
+          var t = game.itemDB[k];
+          if (3 == game.map[a][e][0] && game.map[a][e][3] == t[0]) {
+            var n = a * game.tileW * game.skalaSprite,
+              m = e * game.tileW * game.skalaSprite,
+              i = setSprite(t[1], t[2], t[3]);
+            (i.px = n),
+              (i.py = m),
+              (i.tileX = a),
+              (i.tileY = e),
+              game.renderItem.push(i);
           }
         }
-      }
-    }
   }
 }
-
 function buatPetaRPG() {
-  var ox, oy, cx, cy;
-  var minX = Math.floor(game.charX - game.screenW / 2);
-  var minY = Math.floor(game.charY - game.screenH / 2);
-  //mencari koordinat awal yang sesungguhnya digunakan untuk menghitung posisi objek lain
-  game.tileX =
-    game.posX * game.skalaSprite + minX * game.tileW * game.skalaSprite;
-  game.tileY =
-    game.posY * game.skalaSprite + minY * game.tileW * game.skalaSprite;
-
-  for (var i = 0; i < game.screenW + 2; i++) {
-    for (var j = 0; j < game.screenH + 2; j++) {
-      var tx = i + minX;
-      var ty = j + minY;
-      if (
-        tx >= 0 &&
-        ty >= 0 &&
-        tx < game.map.length &&
-        ty < game.map[0].length
-      ) {
-        var t_type = game.map[tx][ty][1];
-        var t_mode = game.map[tx][ty][0];
-        var px =
-          -(game.posX * game.skalaSprite) +
-          game.cameraX +
-          (i - 1) * game.tileW * game.skalaSprite;
-        var py =
-          -(game.posY * game.skalaSprite) +
-          game.cameraY +
-          (j - 1) * game.tileW * game.skalaSprite;
-        //background
-        if (t_type > -1) {
-          var sy = Math.floor(t_type / game.tile_num);
-          var sx = t_type - sy * game.tile_num;
-          konten.drawImage(
-            game.tileset,
-            sx * game.tileW,
-            sy * game.tileW,
-            game.tileW,
-            game.tileW,
-            px,
-            py,
-            game.tileW * game.skalaSprite,
-            game.tileW * game.skalaSprite
-          );
-        }
-        var i_type = game.map[tx][ty][2];
-        //foreground
-        if (i_type > 0) {
-          var iy = Math.floor(i_type / game.tile_num);
-          var ix = i_type - iy * game.tile_num;
-          konten.drawImage(
-            game.tileset,
-            ix * game.tileW,
-            iy * game.tileW,
-            game.tileW,
-            game.tileW,
-            px,
-            py,
-            game.tileW * game.skalaSprite,
-            game.tileW * game.skalaSprite
-          );
-        }
-        //karakter
-        if (tx == game.charX && ty == game.charY) {
-          game.karakter.x =
-            game.cameraX + (i - 1) * game.tileW * game.skalaSprite;
-          game.karakter.y =
+  var a = Math.floor(game.charX - game.screenW / 2),
+    e = Math.floor(game.charY - game.screenH / 2);
+  (game.tileX =
+    game.posX * game.skalaSprite + a * game.tileW * game.skalaSprite),
+    (game.tileY =
+      game.posY * game.skalaSprite + e * game.tileW * game.skalaSprite);
+  for (var t = 0; t < game.screenW + 2; t++)
+    for (var n = 0; n < game.screenH + 2; n++) {
+      var m = t + a,
+        i = n + e;
+      if (m >= 0 && i >= 0 && m < game.map.length && i < game.map[0].length) {
+        var r = game.map[m][i][1],
+          g =
+            (game.map[m][i][0],
+            -game.posX * game.skalaSprite +
+              game.cameraX +
+              (t - 1) * game.tileW * game.skalaSprite),
+          o =
+            -game.posY * game.skalaSprite +
             game.cameraY +
-            (j - 1) * game.tileW * game.skalaSprite +
-            game.karakter.tinggi / 2;
+            (n - 1) * game.tileW * game.skalaSprite;
+        if (r > -1) {
+          var s = Math.floor(r / game.tile_num),
+            l = r - s * game.tile_num;
+          konten.drawImage(
+            game.tileset,
+            l * game.tileW,
+            s * game.tileW,
+            game.tileW,
+            game.tileW,
+            g,
+            o,
+            game.tileW * game.skalaSprite,
+            game.tileW * game.skalaSprite
+          );
         }
+        var c = game.map[m][i][2];
+        if (c > 0) {
+          var k = Math.floor(c / game.tile_num),
+            h = c - k * game.tile_num;
+          konten.drawImage(
+            game.tileset,
+            h * game.tileW,
+            k * game.tileW,
+            game.tileW,
+            game.tileW,
+            g,
+            o,
+            game.tileW * game.skalaSprite,
+            game.tileW * game.skalaSprite
+          );
+        }
+        m == game.charX &&
+          i == game.charY &&
+          ((game.karakter.x =
+            game.cameraX + (t - 1) * game.tileW * game.skalaSprite),
+          (game.karakter.y =
+            game.cameraY +
+            (n - 1) * game.tileW * game.skalaSprite +
+            game.karakter.tinggi / 2));
       }
     }
-  }
-  //sprite karakter
-  game.karakter.bayangan.x = game.karakter.x;
-  game.karakter.bayangan.y = game.karakter.y;
-  sprite(game.karakter.bayangan);
-  sprite(game.karakter);
-  setRenderItem();
-  renderItemRPG();
-  if (game.isWipe) doWipe();
+  (game.karakter.bayangan.x = game.karakter.x),
+    (game.karakter.bayangan.y = game.karakter.y),
+    sprite(game.karakter.bayangan),
+    sprite(game.karakter),
+    setRenderItem(),
+    renderItemRPG(),
+    game.isWipe && doWipe();
 }
-
 function renderItemRPG() {
-  for (var i = 0; i < game.renderItem.length; i++) {
-    var ob = game.renderItem[i];
-    var rx = ob.px - game.tileX - (game.tileW * game.skalaSprite) / 2;
-    var ry = ob.py - game.tileY - (game.tileW * game.skalaSprite) / 2;
-    if (
-      rx > -ob.lebar &&
-      ry > -ob.tinggi &&
-      rx < game.lebar + ob.lebar &&
-      ry < game.tinggi + ob.tinggi
-    ) {
-      ob.x = rx;
-      ob.y = ry;
-      //kincir
-      if (ob.img == dataGambar.baling) {
-        ob.rotasi += 0.5;
-      }
-      //loop sprite
-      if (ob.maxFrame > 1) {
-        ob.timer++;
-        if (ob.timer > ob.delay) {
-          ob.timer = 0;
-          ob.frame++;
-          if (ob.frame > ob.maxFrame) {
-            if (ob.playOnce) {
-              //hapus untuk partikel 1 kali jalan
-              game.renderItem.pop();
-            } else {
-              if (ob.img == dataGambar.air) {
-                acakAir(ob);
-              } else {
-                ob.frame = 1;
-              }
-            }
-          }
-        }
-      }
-      sprite(ob);
-    }
+  for (var a = 0; a < game.renderItem.length; a++) {
+    var e = game.renderItem[a],
+      t = e.px - game.tileX - (game.tileW * game.skalaSprite) / 2,
+      n = e.py - game.tileY - (game.tileW * game.skalaSprite) / 2;
+    t > -e.lebar &&
+      n > -e.tinggi &&
+      t < game.lebar + e.lebar &&
+      n < game.tinggi + e.tinggi &&
+      ((e.x = t),
+      (e.y = n),
+      e.img == dataGambar.baling && (e.rotasi += 0.5),
+      e.maxFrame > 1 &&
+        (e.timer++,
+        e.timer > e.delay &&
+          ((e.timer = 0),
+          e.frame++,
+          e.frame > e.maxFrame &&
+            (e.playOnce
+              ? game.renderItem.pop()
+              : e.img == dataGambar.air
+              ? acakAir(e)
+              : (e.frame = 1)))),
+      sprite(e));
   }
 }
-
-function acakAir(ob) {
-  if (acak(15) == 10) {
-    var acakX = acak(4) - acak(4);
-    var acakY = acak(4) - acak(4);
-    var newX = ob.tileX - acakX;
-    var newY = ob.tileY - acakY;
-    //cek apakah air id = 291
-    if (game.map[newX][newY][1] == 291) {
-      ob.px = newX * game.tileW * game.skalaSprite;
-      ob.py = newY * game.tileW * game.skalaSprite;
-      ob.tileX = newX;
-      ob.tileY = newY;
-      ob.frame = 0;
-    }
+function acakAir(a) {
+  if (10 == acak(15)) {
+    var e = acak(4) - acak(4),
+      t = acak(4) - acak(4),
+      n = a.tileX - e,
+      m = a.tileY - t;
+    291 == game.map[n][m][1] &&
+      ((a.px = n * game.tileW * game.skalaSprite),
+      (a.py = m * game.tileW * game.skalaSprite),
+      (a.tileX = n),
+      (a.tileY = m),
+      (a.frame = 0));
   }
 }
-
-function RPGframe(str) {
-  var res = str.split("-");
-  return { fMin: Number(res[0]), fMax: Number(res[1]) };
+function RPGframe(a) {
+  var e = a.split("-");
+  return { fMin: Number(e[0]), fMax: Number(e[1]) };
 }
-
-function gerakPeta(ob, sx, sy) {
-  //arah sprite kanan atas kiri bawah
-  //array gerak
-  var ox, oy, cx, cy;
-  ob.timer++;
-  var fr = RPGframe(ob.frameAktif);
-  if (ob.timer > 5) {
-    ob.timer = 0;
-    ob.frame++;
-    if (ob.frame > fr.fMax) {
-      if (ob.aksi == "") {
-        ob.frame = fr.fMin;
-      } else {
-        ob.frame = fr.fMax;
-        jalankanFungsi(game.aksi);
-      }
-    }
-  }
-  if (ob.frame < fr.fMin) ob.frame = fr.fMin;
-  if (ob.frame > fr.fMax) ob.frame = fr.fMax;
-  if (game.aktif) {
-    if (sx == 0 && sy == 0) {
-      //iddle
-      if (ob.arah == 1) ob.frameAktif = ob.diamKanan;
-      if (ob.arah == 2) ob.frameAktif = ob.diamAtas;
-      if (ob.arah == 3) ob.frameAktif = ob.diamKiri;
-      if (ob.arah == 4) ob.frameAktif = ob.diamBawah;
-    }
-    //jalan
-    if (sx > 0) {
-      ob.arah = 1;
-      ob.frameAktif = ob.jalanKanan;
-      ox = game.posX + ob.lebar / 2 + sx;
-      cx = game.charX;
-      if (ox > game.tileW) {
-        cx = game.charX + 1;
-      }
-      if (cx < game.map.length) {
-        if (game.map[cx][game.charY][0] == 0) {
-          game.posX += sx;
-          if (game.posX > game.tileW) {
-            game.posX -= game.tileW;
-            game.charX++;
-          }
-        }
-      }
-    }
-    if (sx < 0) {
-      ob.arah = 3;
-      ob.frameAktif = ob.jalanKiri;
-      ox = game.posX + sx - ob.lebar / 2;
-      cx = game.charX;
-      if (ox < 0) {
-        cx = game.charX - 1;
-      }
-      if (cx > 0) {
-        if (game.map[cx][game.charY][0] == 0) {
-          game.posX += sx;
-          if (game.posX < 0) {
-            game.posX += game.tileW;
-            game.charX--;
-          }
-        }
-      }
-    }
-    //bawah
-    if (sy > 0) {
-      ob.arah = 4;
-      ob.frameAktif = ob.jalanBawah;
-      oy = game.posY + sy + 4;
-      cy = game.charY;
-      if (oy > game.tileW) {
-        cy = game.charY + 1;
-      }
-      if (cy < game.map[0].length) {
-        if (game.map[game.charX][cy][0] == 0) {
-          game.posY += sy;
-          if (game.posY > game.tileW) {
-            game.posY -= game.tileW;
-            game.charY++;
-          }
-        }
-      }
-    }
-    //atas
-    if (sy < 0) {
-      ob.arah = 2;
-      ob.frameAktif = ob.jalanAtas;
-      oy = game.posY + sy - 4;
-      cy = game.charY;
-      if (oy < 0) {
-        cy = game.charY - 1;
-      }
-      if (cy > 0) {
-        if (game.map[game.charX][cy][0] == 0) {
-          game.posY += sy;
-          if (game.posY < 0) {
-            game.posY += game.tileW;
-            game.charY--;
-          }
-        }
-      }
-    }
-  }
+function gerakPeta(a, e, t) {
+  var n, m, i, r;
+  a.timer++;
+  var g = RPGframe(a.frameAktif);
+  a.timer > 5 &&
+    ((a.timer = 0),
+    a.frame++,
+    a.frame > g.fMax &&
+      ("" == a.aksi
+        ? (a.frame = g.fMin)
+        : ((a.frame = g.fMax), jalankanFungsi(game.aksi)))),
+    a.frame < g.fMin && (a.frame = g.fMin),
+    a.frame > g.fMax && (a.frame = g.fMax),
+    game.aktif &&
+      (0 == e &&
+        0 == t &&
+        (1 == a.arah && (a.frameAktif = a.diamKanan),
+        2 == a.arah && (a.frameAktif = a.diamAtas),
+        3 == a.arah && (a.frameAktif = a.diamKiri),
+        4 == a.arah && (a.frameAktif = a.diamBawah)),
+      e > 0 &&
+        ((a.arah = 1),
+        (a.frameAktif = a.jalanKanan),
+        (n = game.posX + a.lebar / 2 + e),
+        (i = game.charX),
+        n > game.tileW && (i = game.charX + 1),
+        i < game.map.length &&
+          0 == game.map[i][game.charY][0] &&
+          ((game.posX += e),
+          game.posX > game.tileW && ((game.posX -= game.tileW), game.charX++))),
+      e < 0 &&
+        ((a.arah = 3),
+        (a.frameAktif = a.jalanKiri),
+        (n = game.posX + e - a.lebar / 2),
+        (i = game.charX),
+        n < 0 && (i = game.charX - 1),
+        i > 0 &&
+          0 == game.map[i][game.charY][0] &&
+          ((game.posX += e),
+          game.posX < 0 && ((game.posX += game.tileW), game.charX--))),
+      t > 0 &&
+        ((a.arah = 4),
+        (a.frameAktif = a.jalanBawah),
+        (m = game.posY + t + 4),
+        (r = game.charY),
+        m > game.tileW && (r = game.charY + 1),
+        r < game.map[0].length &&
+          0 == game.map[game.charX][r][0] &&
+          ((game.posY += t),
+          game.posY > game.tileW && ((game.posY -= game.tileW), game.charY++))),
+      t < 0 &&
+        ((a.arah = 2),
+        (a.frameAktif = a.jalanAtas),
+        (m = game.posY + t - 4),
+        (r = game.charY),
+        m < 0 && (r = game.charY - 1),
+        r > 0 &&
+          0 == game.map[game.charX][r][0] &&
+          ((game.posY += t),
+          game.posY < 0 && ((game.posY += game.tileW), game.charY--))));
 }
 function cekPintu() {
-  if (!game.aktif) return;
-  var ada_pintu = false;
-  if (game.karakter.arah == 1) {
-    if (game.map[game.charX + 1][game.charY][0] == 2) {
-      ada_pintu = true;
-      game.doorID = game.map[game.charX + 1][game.charY][3];
-    }
-  }
-  if (game.karakter.arah == 2) {
-    if (game.map[game.charX][game.charY - 1][0] == 2) {
-      ada_pintu = true;
-      game.doorID = game.map[game.charX][game.charY - 1][3];
-    }
-  }
-  if (game.karakter.arah == 3) {
-    if (game.map[game.charX - 1][game.charY][0] == 2) {
-      ada_pintu = true;
-      game.doorID = game.map[game.charX - 1][game.charY][3];
-    }
-  }
-  if (game.karakter.arah == 4) {
-    if (game.map[game.charX][game.charY + 1][0] == 2) {
-      ada_pintu = true;
-      game.doorID = game.map[game.charX][game.charY + 1][3];
-    }
-  }
-
-  if (ada_pintu) {
-    if (game.doorID != 0) {
-      game.lastMap = game.mapID;
-      // trace(game.doorID+" last map = "+game.lastMap);
-      game.mapID = game.doorID;
-      findDoor(this["map_" + game.doorID]);
-    }
-    addWipe("room");
+  if (game.aktif) {
+    var a = !1;
+    1 == game.karakter.arah &&
+      2 == game.map[game.charX + 1][game.charY][0] &&
+      ((a = !0), (game.doorID = game.map[game.charX + 1][game.charY][3])),
+      2 == game.karakter.arah &&
+        2 == game.map[game.charX][game.charY - 1][0] &&
+        ((a = !0), (game.doorID = game.map[game.charX][game.charY - 1][3])),
+      3 == game.karakter.arah &&
+        2 == game.map[game.charX - 1][game.charY][0] &&
+        ((a = !0), (game.doorID = game.map[game.charX - 1][game.charY][3])),
+      4 == game.karakter.arah &&
+        2 == game.map[game.charX][game.charY + 1][0] &&
+        ((a = !0), (game.doorID = game.map[game.charX][game.charY + 1][3])),
+      a &&
+        (0 != game.doorID &&
+          ((game.lastMap = game.mapID),
+          (game.mapID = game.doorID),
+          findDoor(this["map_" + game.doorID])),
+        addWipe("room"));
   }
 }
-
-function findDoor(newMap) {
-  for (var i = 0; i < newMap.length; i++) {
-    for (var j = 0; j < newMap[0].length; j++) {
-      //door
-      if (newMap[i][j][0] == 2) {
-        if (newMap[i][j][3] == game.lastMap) {
-          game.doorX = i;
-          game.doorY = j;
-        }
-      }
-    }
-  }
-  // trace(game.doorID+" new door is "+game.doorX+" "+game.doorY+" for map "+game.lastMap);
+function findDoor(a) {
+  for (var e = 0; e < a.length; e++)
+    for (var t = 0; t < a[0].length; t++)
+      2 == a[e][t][0] &&
+        a[e][t][3] == game.lastMap &&
+        ((game.doorX = e), (game.doorY = t));
 }
-
-//aksi untuk melakukan sesuatu, secara default sudah ada beberapa fungsi spt cekPintu, cekNPC, cekItem. act = inisiasi aksi, after = yang terjadi setelah animasi aksi selesai
-function aksiRPG(act = null, after = null) {
-  cekPintu();
-  jalankanFungsi(act);
-  game.aksi = after;
+function aksiRPG(a = null, e = null) {
+  cekPintu(), jalankanFungsi(a), (game.aksi = e);
 }
-
-function addWipe(str) {
-  game.aktif = false;
-  game.isWipe = true;
-  game.wipeTime = 0;
-  game.wipeStat = 0;
-  game.wipeAct = str;
+function addWipe(a) {
+  (game.aktif = !1),
+    (game.isWipe = !0),
+    (game.wipeTime = 0),
+    (game.wipeStat = 0),
+    (game.wipeAct = a);
 }
-
 function doWipe() {
-  var rad;
-  if (game.wipeStat == 0) {
-    game.wipeTime += 5;
-    rad = canvas.width / 2 - game.wipeTime * 2;
-    if (rad < 10) {
-      game.wipeTime = 0;
-      game.wipeStat = 1;
-      kotak(0, 0, canvas.width, canvas.height, 1, "black", "black");
-    } else {
-      konten.beginPath();
-      konten.arc(
-        game.karakter.x,
-        game.karakter.y,
-        canvas.width,
-        0,
-        2 * Math.PI,
-        false
-      );
-      konten.arc(game.karakter.x, game.karakter.y, rad, 0, 2 * Math.PI, false);
-      konten.fillStyle = "#000";
-      konten.fill("evenodd");
-    }
-  } else if (game.wipeStat == 1) {
-    kotak(0, 0, canvas.width, canvas.height, 1, "black", "black");
-    if (game.wipeAct == "room") {
-      //ganti peta
-      game.map = this["map_" + game.doorID];
-      game.mapID = game.doorID;
-      game.tileset = game["tileset_" + game.doorID];
-      game.renderItem = [];
-      game.itemRendered = false;
-      if (game.karakter.arah == 4) {
-        game.charX = game.doorX;
-        game.charY = game.doorY + 1;
-        game.posY = 5;
-      }
-      if (game.karakter.arah == 3) {
-        game.charX = game.doorX - 1;
-        game.charY = game.doorY;
-        game.posX = game.tileW - 5;
-      }
-      if (game.karakter.arah == 1) {
-        game.charX = game.doorX + 1;
-        game.charY = game.doorY;
-        game.posX = 5;
-      }
-      if (game.karakter.arah == 2) {
-        game.charX = game.doorX;
-        game.charY = game.doorY - 1;
-        game.posY = game.tileW - 5;
-      }
-    }
-    game.wipeTime++;
-    if (game.wipeTime > 5) {
-      game.wipeStat = 2;
-      game.wipeTime = 0;
-    }
-  } else if (game.wipeStat == 2) {
-    game.wipeTime += 5;
-    rad = game.wipeTime * 2;
-    if (rad > canvas.width / 2) {
-      game.wipeTime = 0;
-      game.wipeStat = 0;
-      game.isWipe = false;
-      game.aktif = true;
-    } else {
-      konten.beginPath();
-      konten.arc(
-        game.karakter.x,
-        game.karakter.y,
-        canvas.width,
-        0,
-        2 * Math.PI,
-        false
-      );
-      konten.arc(game.karakter.x, game.karakter.y, rad, 0, 2 * Math.PI, false);
-      konten.fillStyle = "#000";
-      konten.fill("evenodd");
-    }
-  }
+  var a;
+  0 == game.wipeStat
+    ? ((game.wipeTime += 5),
+      (a = canvas.width / 2 - 2 * game.wipeTime) < 10
+        ? ((game.wipeTime = 0),
+          (game.wipeStat = 1),
+          kotak(0, 0, canvas.width, canvas.height, 1, "black", "black"))
+        : (konten.beginPath(),
+          konten.arc(
+            game.karakter.x,
+            game.karakter.y,
+            canvas.width,
+            0,
+            2 * Math.PI,
+            !1
+          ),
+          konten.arc(game.karakter.x, game.karakter.y, a, 0, 2 * Math.PI, !1),
+          (konten.fillStyle = "#000"),
+          konten.fill("evenodd")))
+    : 1 == game.wipeStat
+    ? (kotak(0, 0, canvas.width, canvas.height, 1, "black", "black"),
+      "room" == game.wipeAct &&
+        ((game.map = this["map_" + game.doorID]),
+        (game.mapID = game.doorID),
+        (game.tileset = game["tileset_" + game.doorID]),
+        (game.renderItem = []),
+        (game.itemRendered = !1),
+        4 == game.karakter.arah &&
+          ((game.charX = game.doorX),
+          (game.charY = game.doorY + 1),
+          (game.posY = 5)),
+        3 == game.karakter.arah &&
+          ((game.charX = game.doorX - 1),
+          (game.charY = game.doorY),
+          (game.posX = game.tileW - 5)),
+        1 == game.karakter.arah &&
+          ((game.charX = game.doorX + 1),
+          (game.charY = game.doorY),
+          (game.posX = 5)),
+        2 == game.karakter.arah &&
+          ((game.charX = game.doorX),
+          (game.charY = game.doorY - 1),
+          (game.posY = game.tileW - 5))),
+      game.wipeTime++,
+      game.wipeTime > 5 && ((game.wipeStat = 2), (game.wipeTime = 0)))
+    : 2 == game.wipeStat &&
+      ((game.wipeTime += 5),
+      (a = 2 * game.wipeTime) > canvas.width / 2
+        ? ((game.wipeTime = 0),
+          (game.wipeStat = 0),
+          (game.isWipe = !1),
+          (game.aktif = !0))
+        : (konten.beginPath(),
+          konten.arc(
+            game.karakter.x,
+            game.karakter.y,
+            canvas.width,
+            0,
+            2 * Math.PI,
+            !1
+          ),
+          konten.arc(game.karakter.x, game.karakter.y, a, 0, 2 * Math.PI, !1),
+          (konten.fillStyle = "#000"),
+          konten.fill("evenodd")));
 }
-//cekPeta digunakan untuk mengetahui tipe map. Num = pergeseran dari pemain
-function cekPeta(num) {
-  if (game.karakter.arah == 1) return game.map[game.charX + num][game.charY];
-  if (game.karakter.arah == 2) return game.map[game.charX][game.charY - num];
-  if (game.karakter.arah == 3) return game.map[game.charX - num][game.charY];
-  if (game.karakter.arah == 4) return game.map[game.charX][game.charY + num];
+function cekPeta(a) {
+  return 1 == game.karakter.arah
+    ? game.map[game.charX + a][game.charY]
+    : 2 == game.karakter.arah
+    ? game.map[game.charX][game.charY - a]
+    : 3 == game.karakter.arah
+    ? game.map[game.charX - a][game.charY]
+    : 4 == game.karakter.arah
+    ? game.map[game.charX][game.charY + a]
+    : void 0;
 }
-//function addPartikel digunakan untuk menambahkan objek
-//setelah jalan hilang, num untuk pergeseran dari pemain
-function tambahPartikel(img, p, l, num = 0) {
-  var px = game.charX;
-  var py = game.charY;
-  if (game.karakter.arah == 1) px += num;
-  if (game.karakter.arah == 2) py -= num;
-  if (game.karakter.arah == 3) px -= num;
-  if (game.karakter.arah == 4) py += num;
-  var ob = setSprite(img, p, l);
-  ob.px = px * game.tileW * game.skalaSprite;
-  ob.py = py * game.tileW * game.skalaSprite;
-  ob.playOnce = true;
-  ob.delay = 3;
-  game.renderItem.push(ob);
+function tambahPartikel(a, e, t, n = 0) {
+  var m = game.charX,
+    i = game.charY;
+  1 == game.karakter.arah && (m += n),
+    2 == game.karakter.arah && (i -= n),
+    3 == game.karakter.arah && (m -= n),
+    4 == game.karakter.arah && (i += n);
+  var r = setSprite(a, e, t);
+  (r.px = m * game.tileW * game.skalaSprite),
+    (r.py = i * game.tileW * game.skalaSprite),
+    (r.playOnce = !0),
+    (r.delay = 3),
+    game.renderItem.push(r);
 }
