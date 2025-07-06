@@ -23,6 +23,7 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
     />
     <link rel="stylesheet" href="style.css" />
+    <link rel="manifest" href="manifest.json" />
     <script type="text/javascript" src="gameLib.js"></script>
   </head>
   <body>
@@ -83,4 +84,18 @@
   <script type="text/javascript" src="map_2.js" defer></script>
   <script type="text/javascript" src="map_1.js" defer></script>
   <script type="text/javascript" src="game.js" defer></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker
+          .register("/sw.js")
+          .then((registration) =>
+            console.log("Pendaftaran ServiceWorker berhasil")
+          )
+          .catch((err) =>
+            console.log("Pendaftaran ServiceWorker gagal: ", err)
+          );
+      });
+    }
+  </script>
 </html>

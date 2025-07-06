@@ -529,7 +529,7 @@ function rafLoops() {
     (now = Date.now()),
     (elapsed = now - then) > fpsInterval &&
       ((then = now - (elapsed % fpsInterval)),
-      "function" == typeof loopFunc && loopFunc());
+      "function" == typeof loopFunc && loopFunc(elapsed));
 }
 function grid() {
   var a = screenW / 100,
