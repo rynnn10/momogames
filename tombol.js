@@ -39,27 +39,22 @@ function showCharacterSelectionPopup() {
     },
   });
 }
+// file: tombol.js
 
 function startGame() {
-  // Sembunyikan menu utama dan tampilkan game
   mainMenu.classList.add("hidden");
   gameContainer.classList.remove("hidden");
 
-  // --- PERBAIKAN DI SINI ---
-  // 1. Mulai audio SEGERA sebagai respons klik pengguna
-  if (audio.paused && isSoundOn) {
-    audio.play();
-    musicIcon.innerText = "volume_up";
-  }
-
-  // 2. Logika game lainnya tetap di dalam setTimeout
+  // Jeda 150 milidetik untuk memberi waktu browser mengatur layout
   setTimeout(() => {
-    // Inisialisasi properti game
+    audio.paused &&
+      ((isSoundOn = !0), audio.play(), (musicIcon.innerText = "volume_up"));
+
     game.coinKehidupan = 5;
     game.coinAnim = setSprite(dataGambar.coin, 32, 32);
     game.coinAnim.frameRate = 5;
 
-    // Panggil setAwal dan jalankan game loop setelah jeda
+    // Panggil setAwal dan jalankan game loop SETELAH jeda
     setAwal();
     jalankan(gameLoop);
 
@@ -163,37 +158,33 @@ function showLevelCompletePopup(a) {
     showConfirmButton: !1,
     html: `\n        <p>Skor Anda: <strong>${a}</strong></p>\n        <div style="text-align: left; margin-top: 20px; border-top: 1px solid #555; padding-top: 15px;">\n            <h4 style="color: #3498db;">Selanjutnya: Level 2</h4>\n            <p style="font-size: 0.9em;">Waspada! Musuh baru <strong>Babi Hutan</strong> yang lebih cepat akan muncul. Kamu juga akan menemukan buah <strong>Kiwi</strong> yang memberikan skor lebih tinggi!</p>\n        </div>\n        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">\n            <button id="swal-continue" class="swal-btn swal-btn-resume">Lanjutkan</button>\n            <button id="swal-replay" class="swal-btn swal-btn-refresh">Ulangi Level</button>\n            <button id="swal-share" class="swal-btn" style="background-color:#9b59b6;">Bagikan Skor</button>\n            <button id="swal-menu" class="swal-btn swal-btn-kembali">Kembali ke Menu</button>\n        </div>\n    `,
     didOpen: () => {
-      document.getElementById("swal-continue").onclick = () => {
-        Swal.close();
-
-        // Jeda lagi untuk transisi level
-        setTimeout(() => {
-          cumulativeScore = game.score;
-          game.level++;
-          game.coinKehidupan = 5;
-          game.aktif = !0;
+      (document.getElementById("swal-continue").onclick = () => {
+        Swal.close(),
+          (cumulativeScore = game.score),
+          game.level++,
+          (game.coinKehidupan = 5),
+          (game.aktif = !0),
           ulangiPermainan(!0, !0);
-        }, 150);
-      };
-      (document.getElementById("swal-replay").onclick = () => {
-        Swal.fire({
-          title: "Ulangi Level?",
-          text: "Anda yakin ingin mengulangi level ini?",
-          icon: "warning",
-          showCancelButton: !0,
-          confirmButtonText: "Ya, Ulangi!",
-          cancelButtonText: "Batal",
-        }).then((n) => {
-          n.isConfirmed
-            ? (Swal.close(),
-              (game.score = game.level > 1 ? cumulativeScore : 0),
-              (game.coinKehidupan = 5),
-              (game.aktif = !0),
-              ulangiPermainan(!0))
-            : n.dismiss === Swal.DismissReason.cancel &&
-              showLevelCompletePopup(a);
-        });
       }),
+        (document.getElementById("swal-replay").onclick = () => {
+          Swal.fire({
+            title: "Ulangi Level?",
+            text: "Anda yakin ingin mengulangi level ini?",
+            icon: "warning",
+            showCancelButton: !0,
+            confirmButtonText: "Ya, Ulangi!",
+            cancelButtonText: "Batal",
+          }).then((n) => {
+            n.isConfirmed
+              ? (Swal.close(),
+                (game.score = game.level > 1 ? cumulativeScore : 0),
+                (game.coinKehidupan = 5),
+                (game.aktif = !0),
+                ulangiPermainan(!0))
+              : n.dismiss === Swal.DismissReason.cancel &&
+                showLevelCompletePopup(a);
+          });
+        }),
         (document.getElementById("swal-share").onclick = () => {
           Swal.close(),
             generateScoreImageAndShare(a, game.level, () =>
@@ -214,37 +205,33 @@ function showNextLevelPopup(a) {
     showConfirmButton: !1,
     html: `\n        <p>Skor Anda: <strong>${a}</strong></p>\n        \n        <div style="text-align: left; margin-top: 20px; border-top: 1px solid #555; padding-top: 15px;">\n            <h4 style="color: #3498db;">Selanjutnya: Level Terakhir!</h4>\n            <p style="font-size: 0.9em;">Tantangan sesungguhnya menanti! Hadapi musuh baru <strong>Tanaman Karnivora</strong> yang bisa menembak dan temukan buah <strong>Melon</strong> untuk skor tertinggi.</p>\n        </div>\n\n        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">\n            <button id="swal-continue-l3" class="swal-btn swal-btn-resume">Lanjut ke Level 3</button>\n            <button id="swal-replay-l2" class="swal-btn swal-btn-refresh">Ulangi Level 2</button>\n            \n            <button id="swal-replay-l1" class="swal-btn swal-btn-info">Main di Level 1</button> \n            \n            <button id="swal-share" class="swal-btn" style="background-color:#9b59b6;">Bagikan Skor</button>\n            <button id="swal-menu" class="swal-btn swal-btn-kembali">Kembali ke Menu</button>\n        </div>\n    `,
     didOpen: () => {
-      // Dalam fungsi showNextLevelPopup
-      document.getElementById("swal-continue-l3").onclick = () => {
-        Swal.close();
-
-        // Jeda lagi untuk transisi level
-        setTimeout(() => {
-          cumulativeScore = game.score;
-          game.level = 3;
-          game.coinKehidupan = 5;
-          game.aktif = !0;
+      (document.getElementById("swal-continue-l3").onclick = () => {
+        Swal.close(),
+          (cumulativeScore = game.score),
+          (game.level = 3),
+          (game.coinKehidupan = 5),
+          (game.aktif = !0),
           ulangiPermainan(!0, !0);
-        }, 150);
-      };
-      (document.getElementById("swal-replay-l2").onclick = () => {
-        Swal.fire({
-          title: "Ulangi Level 2?",
-          text: "Anda yakin ingin mengulangi level ini?",
-          icon: "warning",
-          showCancelButton: !0,
-          confirmButtonText: "Ya, Ulangi!",
-          cancelButtonText: "Batal",
-        }).then((n) => {
-          n.isConfirmed
-            ? (Swal.close(),
-              (game.score = cumulativeScore),
-              (game.coinKehidupan = 5),
-              (game.aktif = !0),
-              ulangiPermainan(!0))
-            : n.dismiss === Swal.DismissReason.cancel && showNextLevelPopup(a);
-        });
       }),
+        (document.getElementById("swal-replay-l2").onclick = () => {
+          Swal.fire({
+            title: "Ulangi Level 2?",
+            text: "Anda yakin ingin mengulangi level ini?",
+            icon: "warning",
+            showCancelButton: !0,
+            confirmButtonText: "Ya, Ulangi!",
+            cancelButtonText: "Batal",
+          }).then((n) => {
+            n.isConfirmed
+              ? (Swal.close(),
+                (game.score = cumulativeScore),
+                (game.coinKehidupan = 5),
+                (game.aktif = !0),
+                ulangiPermainan(!0))
+              : n.dismiss === Swal.DismissReason.cancel &&
+                showNextLevelPopup(a);
+          });
+        }),
         (document.getElementById("swal-replay-l1").onclick = () => {
           Swal.fire({
             title: "Kembali ke Level 1?",
