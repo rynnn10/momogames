@@ -225,9 +225,9 @@ canvas {
   transform: scale(1.05);
 }
 @media (max-width: 768px) {
-  html.swal2-shown #game-container {
+  /* html.swal2-shown #game-container {
     display: none;
-  }
+  } */
   .game-title {
     font-size: 2rem;
   }
@@ -242,7 +242,7 @@ canvas {
     padding-top: 15px;
     padding-bottom: 50px;
     box-sizing: border-box;
-    height: 100%;
+    height: auto;
   }
   #main-controls {
     position: relative;
